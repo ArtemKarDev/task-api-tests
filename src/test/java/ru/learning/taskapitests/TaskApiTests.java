@@ -11,7 +11,7 @@ public class TaskApiTests {
 
 
     @Test
-    void shouldCreateTaskAndGetItById(){
+    void shouldCreateTaskAndGetItById() {
         String requestBody = """
                     {
                         "title": "Автотестовая задача",
@@ -26,32 +26,32 @@ public class TaskApiTests {
                 given()
                         .spec(ApiSpec.requestSpec())
                         .body(requestBody)
-                .when()
+                        .when()
                         .post("/api/tasks")
-                .then()
+                        .then()
                         .statusCode(201)
                         .contentType(ContentType.JSON)
-                        .body("id",notNullValue())
-                        .body("title",equalTo("Автотестовая задача"))
+                        .body("id", notNullValue())
+                        .body("title", equalTo("Автотестовая задача"))
                         .body("status", equalTo("NEW"))
                         .extract()
                         .path("id");
 
         // Получаем созданную задачу
-                given()
-                        .spec(ApiSpec.requestSpec())
+        given()
+                .spec(ApiSpec.requestSpec())
                 .when()
-                        .get("/api/tasks/{id}",taskId)
+                .get("/api/tasks/{id}", taskId)
                 .then()
-                        .statusCode(200)
-                        .body("id", equalTo(taskId))
-                        .body("title", equalTo("Автотестовая задача"))
-                        .body("priority",equalTo("HIGH"));
+                .statusCode(200)
+                .body("id", equalTo(taskId))
+                .body("title", equalTo("Автотестовая задача"))
+                .body("priority", equalTo("HIGH"));
     }
 
 
     @Test
-    void shouldReturn400WHenTitleIsMissing(){
+    void shouldReturn400WHenTitleIsMissing() {
         String requestBody = """
                     {
                         "description": "Задача без названия, проверка валидации обязательного поля",
@@ -64,15 +64,15 @@ public class TaskApiTests {
         given()
                 .spec(ApiSpec.requestSpec())
                 .body(requestBody)
-        .when()
+                .when()
                 .post("/api/tasks")
-        .then()
+                .then()
                 .statusCode(400);
 
     }
 
     @Test
-    void shouldReturn400WHenPriorityIsInvalid(){
+    void shouldReturn400WHenPriorityIsInvalid() {
         String requestBody = """
                     {
                         "title": "Некорректная задача",
@@ -94,19 +94,20 @@ public class TaskApiTests {
     }
 
     @Test
-    public void shouldReturn404WhenTaskDoesNotExist(){
+    public void shouldReturn404WhenTaskDoesNotExist() {
         long nonexistentId = Long.MAX_VALUE;
 
         given()
                 .spec(ApiSpec.requestSpec())
-        .when()
+                .when()
                 .get("/api/tasks/{id}", nonexistentId)
-        .then()
+                .then()
                 .statusCode(404)
-                .body("error", equalTo("Task not found with id: "+ nonexistentId));
+                .body("error", equalTo("Task not found with id: " + nonexistentId));
     }
+
     @Test
-    public void shouldDeleteTaskAndReturn404WhenGettingIt(){
+    public void shouldDeleteTaskAndReturn404WhenGettingIt() {
         String requestBody = """
                     {
                         "title": "Автотестовая задача",
@@ -125,8 +126,8 @@ public class TaskApiTests {
                         .post("/api/tasks")
                         .then()
                         .statusCode(201)
-                        .body("id",notNullValue())
-                        .body("title",equalTo("Автотестовая задача"))
+                        .body("id", notNullValue())
+                        .body("title", equalTo("Автотестовая задача"))
                         .body("status", equalTo("NEW"))
                         .extract()
                         .path("id");
@@ -134,7 +135,7 @@ public class TaskApiTests {
         given()
                 .spec(ApiSpec.requestSpec())
                 .when()
-                .delete("api/tasks/{id}",taskId)
+                .delete("api/tasks/{id}", taskId)
                 .then()
                 .statusCode(204);
 
@@ -149,59 +150,59 @@ public class TaskApiTests {
     }
 
     @Test
-    void shouldUpdateTask(){
+    void shouldUpdateTask() {
         String createBody = """
-            {
-                "title": "Исходная задача",
-                "description": "До обновления",
-                "status": "NEW",
-                "priority": "LOW",
-                "assignee": "tester"
-            }
-            """;
+                {
+                    "title": "Исходная задача",
+                    "description": "До обновления",
+                    "status": "NEW",
+                    "priority": "LOW",
+                    "assignee": "tester"
+                }
+                """;
         int taskId =
                 given()
                         .spec(ApiSpec.requestSpec())
                         .body(createBody)
-                .when()
+                        .when()
                         .post("api/tasks")
-                .then()
+                        .then()
                         .statusCode(201)
                         .extract()
                         .path("id");
 
 
         String updateBody = """
-            {
-                "title": "Обновлённая задача",
-                "description": "После обновления",
-                "status": "IN_PROGRESS",
-                "priority": "HIGH",
-                "assignee": "senior-tester"
-            }
-            """;
+                {
+                    "title": "Обновлённая задача",
+                    "description": "После обновления",
+                    "status": "IN_PROGRESS",
+                    "priority": "HIGH",
+                    "assignee": "senior-tester"
+                }
+                """;
 
         given()
                 .spec(ApiSpec.requestSpec())
                 .body(updateBody)
-        .when()
+                .when()
                 .put("/api/tasks/{id}", taskId)
-        .then()
+                .then()
                 .statusCode(200)
-                .body("id",equalTo(taskId))
-                .body("title",equalTo("Обновлённая задача"));
+                .body("id", equalTo(taskId))
+                .body("title", equalTo("Обновлённая задача"));
 
         given()
                 .spec(ApiSpec.requestSpec())
-        .when()
+                .when()
                 .get("/api/tasks/{id}", taskId)
-        .then()
+                .then()
                 .statusCode(200)
                 .body("title", equalTo("Обновлённая задача"));
     }
 
     @Test
-    void shouldReturn404WhenUpdateNonexistentTask(){
+    void shouldReturn404WhenUpdateNonexistentTask() {
         String requestBody = """
                     {
                         "title": "Автотестовая задача",
@@ -220,29 +221,30 @@ public class TaskApiTests {
                         .post("/api/tasks")
                         .then()
                         .statusCode(201)
-                        .body("id",notNullValue())
-                        .body("title",equalTo("Автотестовая задача"))
+                        .body("id", notNullValue())
+                        .body("title", equalTo("Автотестовая задача"))
                         .body("status", equalTo("NEW"))
                         .extract()
                         .path("id");
 
+        // удаляем задачу
         given()
                 .spec(ApiSpec.requestSpec())
                 .when()
-                .delete("api/tasks/{id}",taskId)
+                .delete("api/tasks/{id}", taskId)
                 .then()
                 .statusCode(204);
 
 
         String updateBody = """
-            {
-                "title": "Несуществующая задача",
-                "description": "Проверка ошибки",
-                "status": "NEW",
-                "priority": "LOW",
-                "assignee": "tester"
-            }
-            """;
+                {
+                    "title": "Несуществующая задача",
+                    "description": "Проверка ошибки",
+                    "status": "NEW",
+                    "priority": "LOW",
+                    "assignee": "tester"
+                }
+                """;
 
         given()
                 .spec(ApiSpec.requestSpec())
@@ -251,6 +253,107 @@ public class TaskApiTests {
                 .put("/api/tasks/{id}", taskId)
                 .then()
                 .statusCode(404);
+
+    }
+
+
+    @Test
+    void shouldPatchOnlyPriorityAndKeepOtherFields() {
+        String createBody = """
+                {
+                    "title": "Исходная задача",
+                    "description": "Описание не должно измениться",
+                    "status": "NEW",
+                    "priority": "LOW",
+                    "assignee": "tester"
+                }
+                """;
+
+        String updateBody = """
+                {
+                    "priority": "HIGH"
+                }
+                """;
+
+        int taskId = given()
+                .spec(ApiSpec.requestSpec())
+                .body(createBody)
+                .when()
+                .post("/api/tasks")
+                .then()
+                .statusCode(201)
+                .extract()
+                .path("id");
+
+        given()
+                .spec(ApiSpec.requestSpec())
+                .body(updateBody)
+                .when()
+                .patch("/api/tasks/{id}", taskId)
+                .then()
+                .statusCode(200)
+                .body("priority", equalTo("HIGH"))
+                .body("title", equalTo("Исходная задача"));
+    }
+
+    @Test
+    void shouldReturn404WhenNonexistentTask() {
+        String requestBody = """
+                    {
+                        "title": "Автотестовая задача",
+                        "description": "Создана через REST Assured для проверки удаления",
+                        "status": "NEW",
+                        "priority": "HIGH",
+                        "assignee": "tester"
+                    }
+                """;
+        // Создаём задачу
+        int taskId =
+                given()
+                        .spec(ApiSpec.requestSpec())
+                        .body(requestBody)
+                        .when()
+                        .post("/api/tasks")
+                        .then()
+                        .statusCode(201)
+                        .body("id", notNullValue())
+                        .body("title", equalTo("Автотестовая задача"))
+                        .body("status", equalTo("NEW"))
+                        .extract()
+                        .path("id");
+
+        // удаляем задачу
+        given()
+                .spec(ApiSpec.requestSpec())
+                .when()
+                .delete("api/tasks/{id}", taskId)
+                .then()
+                .statusCode(204);
+
+        String updateBody = """
+                {
+                    "priority": "HIGH"
+                }
+                """;
+        // пытаемся частитьно обновить задачу
+        given()
+                .spec(ApiSpec.requestSpec())
+                .body(updateBody)
+                .when()
+                .patch("/api/tasks/{id}", taskId)
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    void shouldReturn400WhenPatchBodyIsEmpty() {
+        given()
+                .spec(ApiSpec.requestSpec())
+                .body("{}")
+                .when()
+                .patch("/api/tasks/{id}", 1)
+                .then()
+                .statusCode(400);
 
     }
 
