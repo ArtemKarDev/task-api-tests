@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.notNullValue;
 
 public class TaskApiTests {
 
-    private static final String BASE_URL = "http://localhost:8080";
 
     @Test
     void shouldCreateTaskAndGetItById(){
@@ -25,8 +24,7 @@ public class TaskApiTests {
         // Создаём задачу
         int taskId =
                 given()
-                        .baseUri(BASE_URL)
-                        .contentType(ContentType.JSON)
+                        .spec(ApiSpec.requestSpec())
                         .body(requestBody)
                 .when()
                         .post("/api/tasks")
@@ -41,7 +39,7 @@ public class TaskApiTests {
 
         // Получаем созданную задачу
                 given()
-                        .baseUri(BASE_URL)
+                        .spec(ApiSpec.requestSpec())
                 .when()
                         .get("/api/tasks/{id}",taskId)
                 .then()
@@ -49,6 +47,105 @@ public class TaskApiTests {
                         .body("id", equalTo(taskId))
                         .body("title", equalTo("Автотестовая задача"))
                         .body("priority",equalTo("HIGH"));
+    }
+
+
+    @Test
+    void shouldReturn400WHenTitleIsMissing(){
+        String requestBody = """
+                    {
+                        "description": "Задача без названия, проверка валидации обязательного поля",
+                        "status": "NEW",
+                        "priority": "HIGH",
+                        "assignee": "tester"
+                    }
+                """;
+        // Создаём задачу
+        given()
+                .spec(ApiSpec.requestSpec())
+                .body(requestBody)
+        .when()
+                .post("/api/tasks")
+        .then()
+                .statusCode(400);
+
+    }
+
+    @Test
+    void shouldReturn400WHenPriorityIsInvalid(){
+        String requestBody = """
+                    {
+                        "title": "Некорректная задача",
+                        "description": "Проверка валидации значения",
+                        "status": "NEW",
+                        "priority": "NOT_HIGH",
+                        "assignee": "tester"
+                    }
+                """;
+        // Создаём задачу
+        given()
+                .spec(ApiSpec.requestSpec())
+                .body(requestBody)
+                .when()
+                .post("/api/tasks")
+                .then()
+                .statusCode(400);
+
+    }
+
+    @Test
+    public void shouldReturn404WhenTaskDoesNotExist(){
+        long nonexistentId = Long.MAX_VALUE;
+
+        given()
+                .spec(ApiSpec.requestSpec())
+        .when()
+                .get("/api/tasks/{id}", nonexistentId)
+        .then()
+                .statusCode(404)
+                .body("error", equalTo("Task not found with id: "+ nonexistentId));
+    }
+    @Test
+    public void shouldDeleteTaskAndReturn404WhenGettingIt(){
+        String requestBody = """
+                    {
+                        "title": "Автотестовая задача",
+                        "description": "Создана через REST Assured для проверки удаления",
+                        "status": "NEW",
+                        "priority": "HIGH",
+                        "assignee": "tester"
+                    }
+                """;
+        // Создаём задачу
+        int taskId =
+                given()
+                        .spec(ApiSpec.requestSpec())
+                        .body(requestBody)
+                        .when()
+                        .post("/api/tasks")
+                        .then()
+                        .statusCode(201)
+                        .body("id",notNullValue())
+                        .body("title",equalTo("Автотестовая задача"))
+                        .body("status", equalTo("NEW"))
+                        .extract()
+                        .path("id");
+
+        given()
+                .spec(ApiSpec.requestSpec())
+                .when()
+                .delete("api/tasks/{id}",taskId)
+                .then()
+                .statusCode(204);
+
+
+        given()
+                .spec(ApiSpec.requestSpec())
+                .when()
+                .get("/api/tasks/{id}", taskId)
+                .then()
+                .statusCode(404);
+
     }
 
 }
