@@ -17,12 +17,12 @@ public class TestBase {
     private final List<Long> createdTaskIds = new ArrayList<>();
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         taskApi = new TaskApiClient();
         createdTaskIds.clear();
     }
 
-    protected long createdTask(){
+    protected long createdTask() {
         Response response = taskApi.createTask(TaskTestData.validCreateTaskRequest());
 
         response.then()
@@ -35,11 +35,19 @@ public class TestBase {
     }
 
     @AfterEach
-    protected void cleanUp(){
-        System.out.println("Очистка бд: "+ createdTaskIds.toString());
-        for (Long taskId : createdTaskIds){
-            taskApi.deleteTask(taskId).then().statusCode(204);
+    protected void cleanUp() {
+        System.out.println("Очистка бд: " + createdTaskIds.toString());
+        for (Long taskId : createdTaskIds) {
+            int statusCode =
+                    taskApi.deleteTask(taskId).then().extract().statusCode();
+            if (statusCode != 204 && statusCode != 404) {
+                throw new AssertionError("Неудалось удалить задачу с ID " + taskId + " HTTP-статус: " + statusCode);
+            }
         }
-    createdTaskIds.clear();
+        createdTaskIds.clear();
+    }
+
+    protected void registerTaskForCleanup(Long taskId) {
+        createdTaskIds.add(taskId);
     }
 }

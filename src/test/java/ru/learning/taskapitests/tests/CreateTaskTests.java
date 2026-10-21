@@ -18,18 +18,20 @@ public class CreateTaskTests extends TestBase {
 
         createResponse.then().statusCode(201);
 
-        int taskId = createResponse.jsonPath().getInt("id");
+        Long taskId = createResponse.jsonPath().getLong("id");
+
+        registerTaskForCleanup(taskId);
 
         assertThat(taskId).as("ID созданной задачи").isPositive();
         assertThat(createResponse.jsonPath().getString("title")).as("Название созданной задачи").isEqualTo("Автотестовая задача");
         assertThat(createResponse.jsonPath().getString("status")).as("Статус созданной задачи").isEqualTo("NEW");
         assertThat(createResponse.jsonPath().getString("priority")).as("Приоритет  созданной задачи").isEqualTo("HIGH");
 
-        Response getResponse =taskApi.getTaskById(taskId);
+        Response getResponse = taskApi.getTaskById(taskId);
 
         getResponse.then().statusCode(200);
 
-        assertThat(getResponse.jsonPath().getInt("id")).as("ID полученной задачи").isEqualTo(taskId);
+        assertThat(getResponse.jsonPath().getLong("id")).as("ID полученной задачи").isEqualTo(taskId);
         assertThat(getResponse.jsonPath().getString("title")).as("Название полученной задачи").isEqualTo("Автотестовая задача");
         assertThat(getResponse.jsonPath().getString("priority")).as("Приоритет полученной задачи").isEqualTo("HIGH");
 
