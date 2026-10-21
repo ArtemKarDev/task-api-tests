@@ -6,7 +6,6 @@ import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskTestData;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 public class CreateTaskTests extends TestBase {
 
@@ -16,7 +15,10 @@ public class CreateTaskTests extends TestBase {
 
         Response createResponse = taskApi.createTask(TaskTestData.validCreateTaskRequest());
 
-        createResponse.then().statusCode(201);
+        assertThat(createResponse.statusCode())
+                .as("HTTP-статус при создании задачи")
+                .isEqualTo(201);
+
 
         Long taskId = createResponse.jsonPath().getLong("id");
 
@@ -29,11 +31,29 @@ public class CreateTaskTests extends TestBase {
 
         Response getResponse = taskApi.getTaskById(taskId);
 
-        getResponse.then().statusCode(200);
+        assertThat(getResponse.statusCode())
+                .as("HTTP-статус при получении задачи по ID")
+                .isEqualTo(200);
 
         assertThat(getResponse.jsonPath().getLong("id")).as("ID полученной задачи").isEqualTo(taskId);
         assertThat(getResponse.jsonPath().getString("title")).as("Название полученной задачи").isEqualTo("Автотестовая задача");
         assertThat(getResponse.jsonPath().getString("priority")).as("Приоритет полученной задачи").isEqualTo("HIGH");
 
     }
+
+    @Test
+    void shouldReturn400WhenTitleIsMissing() {
+        Response response = taskApi.createTask(TaskTestData.invalidCreateTaskRequestWithoutTitle());
+
+        assertThat(response.statusCode()).as("HTTP-статус при создании задачи без названия").isEqualTo(400);
+    }
+
+    @Test
+    void shouldReturn400WhenPriorityIsInvalid() {
+        Response response = taskApi.createTask(TaskTestData.invalidCreateTaskRequestInvalidPriority());
+
+        assertThat(response.statusCode()).as("HTTP-статус при создании задачи с некорректным приоритетом").isEqualTo(400);
+    }
+
+
 }

@@ -9,6 +9,15 @@ import static io.restassured.RestAssured.given;
 
 public class TaskApiClient {
 
+    private void attachResponseDetails(Response response){
+        AllureAttachments.attachStatus(response.statusCode());
+
+        String responseBody = response.asPrettyString();
+        if (!responseBody.isBlank()){
+            AllureAttachments.attachResponse(responseBody);
+        }
+    }
+
     @Step("Создать задачу")
     public Response createTask(String requestBody) {
 
@@ -20,8 +29,7 @@ public class TaskApiClient {
                 .when()
                 .post("/api/tasks");
 
-        AllureAttachments.attachStatus(response.statusCode());
-        AllureAttachments.attachResponse(response.asPrettyString());
+        attachResponseDetails(response);
 
         return response;
     }
@@ -34,8 +42,7 @@ public class TaskApiClient {
                 .when()
                 .get("/api/tasks/{id}", taskId);
 
-        AllureAttachments.attachStatus(response.statusCode());
-        AllureAttachments.attachResponse(response.asPrettyString());
+        attachResponseDetails(response);
 
         return response;
     }
@@ -51,8 +58,7 @@ public class TaskApiClient {
                 .when()
                 .put("/api/tasks/{id}", taskId);
 
-        AllureAttachments.attachStatus(response.statusCode());
-        AllureAttachments.attachResponse(response.asPrettyString());
+        attachResponseDetails(response);
 
         return response;
     }
@@ -66,25 +72,24 @@ public class TaskApiClient {
                 .spec(ApiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .patch("/api/test/{id}", taskId);
+                .patch("/api/tasks/{id}", taskId);
 
-        AllureAttachments.attachStatus(response.statusCode());
-        AllureAttachments.attachResponse(response.asPrettyString());
+        attachResponseDetails(response);
 
         return response;
     }
 
-    @Step("Удалить задачи по Id: : {taskId}")
+    @Step("Удалить задачу по Id: : {taskId}")
     public Response deleteTask(long taskId) {
         Response response = given()
                 .spec(ApiSpec.requestSpec())
                 .when()
                 .delete("/api/tasks/{id}", taskId);
 
-        AllureAttachments.attachStatus(response.statusCode());
-        AllureAttachments.attachResponse(response.asPrettyString());
+        attachResponseDetails(response);
 
         return response;
     }
+
 
 }

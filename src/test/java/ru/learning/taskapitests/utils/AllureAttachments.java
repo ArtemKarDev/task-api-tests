@@ -20,4 +20,5 @@ public class AllureAttachments {
     public static void attachResponse(String responseBody){
         Allure.addAttachment("Тело ответа","application/json", responseBody,".json");
     }
+
 }
