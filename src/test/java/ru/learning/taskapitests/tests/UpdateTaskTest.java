@@ -13,21 +13,16 @@ public class UpdateTaskTest extends TestBase {
     @Test
     void shouldUpdateTask() {
 
-        long taskId = createdTask();
+        long taskId = createTaskForTest(TaskTestData.validCreateTaskRequest());
 
         Response updateResponse = taskApi.updateTask(taskId, TaskTestData.validUpdateRequestBody());
 
-        updateResponse.then().statusCode(200);
-        assertThat(updateResponse.jsonPath().getString("title"))
-                .as("ПРоверка обновления title")
-                .isEqualTo("Обновлённая задача");
+        steps.checkStatus(updateResponse, 200);
+        steps.checkTaskData(updateResponse,taskId,"Обновлённая задача","IN_PROGRESS","MEDIUM");
 
-
-        Response getResponse = taskApi.getTaskById(taskId);
-        getResponse.then().statusCode(200);
-        assertThat(getResponse.jsonPath().getString("title"))
-                .as("Проверка обновления title в get запросе")
-                .isEqualTo("Обновлённая задача");
+        Response getResponse = steps.getTask(taskId);
+        steps.checkStatus(getResponse, 200);
+        steps.checkTaskData(getResponse,taskId,"Обновлённая задача","IN_PROGRESS","MEDIUM");
 
     }
 
@@ -37,11 +32,9 @@ public class UpdateTaskTest extends TestBase {
         long taskId = Long.MAX_VALUE;
 
         Response updateResponse = taskApi.updateTask(taskId, TaskTestData.validUpdateRequestBody());
-        updateResponse.then().statusCode(404);
 
-        assertThat(updateResponse.jsonPath().getString("error"))
-                .as("Текст ошибки")
-                .isEqualTo("Task not found with id: " + taskId);
+        steps.checkStatus(updateResponse, 404);
+        steps.checkErrorText(updateResponse,"Task not found with id: " + taskId);
     }
 
 }

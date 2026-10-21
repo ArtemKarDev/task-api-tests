@@ -2,20 +2,16 @@ package ru.learning.taskapitests.tests;
 
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
-import ru.learning.taskapitests.ApiSpec;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskTestData;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 
 public class PatchTaskTests extends TestBase {
 
     @Test
     void shouldPatchOnlyPriorityAndKeepOtherFields() {
-        long taskId = createdTask();
+        long taskId = createTaskForTest(TaskTestData.validCreateTaskRequest());
 
         Response patchResponse = taskApi.patchTask(taskId, TaskTestData.validPatchPriorityRequestBody());
         patchResponse.then().statusCode(200);

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.data.TaskTestData;
+import ru.learning.taskapitests.steps.TaskSteps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,27 +15,35 @@ import static org.hamcrest.Matchers.notNullValue;
 public class TestBase {
 
     protected TaskApiClient taskApi;
+    protected TaskSteps steps;
     private final List<Long> createdTaskIds = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
         taskApi = new TaskApiClient();
+        steps = new TaskSteps(taskApi);
         createdTaskIds.clear();
     }
 
-    protected long createdTask() {
-        Response response = taskApi.createTask(TaskTestData.validCreateTaskRequest());
-
-        response.then()
-                .statusCode(201)
-                .body("id", notNullValue());
-        Long taskId = response.jsonPath().getLong("id");
-        createdTaskIds.add(taskId);
+//    protected long createdTask() {
+//        Response response = taskApi.createTask(TaskTestData.validCreateTaskRequest());
+//        response.then()
+//                .statusCode(201)
+//                .body("id", notNullValue());
+//        Long taskId = response.jsonPath().getLong("id");
+//        createdTaskIds.add(taskId);
+//
+//        return taskId;
+//    }
+    protected long createTaskForTest(String requestBody) {
+        long taskId = steps.createTask(requestBody);
+        registerTaskForCleanup(taskId);
 
         return taskId;
     }
 
-    @AfterEach
+
+        @AfterEach
     protected void cleanUp() {
         System.out.println("Очистка бд: " + createdTaskIds.toString());
         for (Long taskId : createdTaskIds) {
