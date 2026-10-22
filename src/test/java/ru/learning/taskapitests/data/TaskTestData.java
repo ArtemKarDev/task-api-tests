@@ -1,9 +1,32 @@
 package ru.learning.taskapitests.data;
 
+import ru.learning.taskapitests.generated.model.CreateTaskRequest;
+import ru.learning.taskapitests.generated.model.Task;
+
 public final class TaskTestData {
     private TaskTestData() {
 
     }
+
+    public static CreateTaskRequest defaultTaskRequestDTO(){
+        return new CreateTaskRequest()
+                .title("Автотестовая задача")
+                .description("Создана через REST Assured")
+                .status("NEW")
+                .priority("HIGH")
+                .assignee("tester");
+    }
+
+//    public static Task taskResponseDTO(){
+//
+//        return new Task()
+//                .title("Автотестовая задача")
+//                .description("Создана через REST Assured")
+//                .status("NEW")
+//                .priority("HIGH")
+//                .assignee("tester");
+//    }
+
 
     public static String validCreateTaskRequest() {
         return """

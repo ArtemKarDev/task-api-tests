@@ -1,13 +1,19 @@
 package ru.learning.taskapitests.client;
 
 import io.qameta.allure.Step;
+import io.restassured.mapper.ObjectMapperType;
 import io.restassured.response.Response;
+import org.springframework.beans.factory.annotation.Value;
 import ru.learning.taskapitests.ApiSpec;
+import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.utils.AllureAttachments;
+import ru.learning.taskapitests.utils.JsonUtils;
 
 import static io.restassured.RestAssured.given;
 
 public class TaskApiClient {
+
+    private static final String POST_TASK_CREATE = "/api/tasks";
 
     private void attachResponseDetails(Response response){
         AllureAttachments.attachStatus(response.statusCode());
@@ -30,6 +36,25 @@ public class TaskApiClient {
                 .post("/api/tasks");
 
         attachResponseDetails(response);
+
+        return response;
+    }
+
+    @Step("Создать задачу с DTO")
+    public Response createTaskDTO(CreateTaskRequest request) {
+
+        AllureAttachments.attachRequest(JsonUtils.toJson(request));
+
+        Response response = given()
+                .spec(ApiSpec.requestSpec())
+                .body(request)
+                .when()
+                .post(POST_TASK_CREATE);
+
+        attachResponseDetails(response);
+
+//        log.info("\n************ Статус код: {}\n", response.statusCode());
+//        log.info("\n************ Body: {}\n", response.body().asPrettyString());
 
         return response;
     }

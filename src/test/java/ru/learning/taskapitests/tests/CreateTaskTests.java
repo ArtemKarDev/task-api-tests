@@ -5,6 +5,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskTestData;
+import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -42,5 +43,14 @@ public class CreateTaskTests extends TestBase {
         assertThat(response.statusCode()).as("HTTP-статус при создании задачи с некорректным приоритетом").isEqualTo(400);
     }
 
+    @Test
+    void shouldCreateTaskAndGetItByIdWithDto() {
+
+        Response createResponse = steps.createDefaultTaskWithDto(TaskTestData.defaultTaskRequestDTO());
+        steps.checkResponseCreateTaskDataWithDto(createResponse,TaskTestData.defaultTaskRequestDTO());
+        Response getResponse = steps.getTask(createResponse.jsonPath().getLong("id"));
+        steps.checkResponseGetTaskDataWithDto(getResponse, TaskTestData.defaultTaskRequestDTO(), createResponse.jsonPath().getLong("id"));
+
+    }
 
 }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.data.TaskTestData;
+import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.steps.TaskSteps;
 
 import java.util.ArrayList;
@@ -42,6 +43,15 @@ public class TestBase {
         return taskId;
     }
 
+    protected Response createDefaultTaskWithDto(CreateTaskRequest request){
+
+        Response response = steps.createDefaultTaskWithDto(request);
+        Long taskId = response.jsonPath().getLong("id");
+        registerTaskForCleanup(taskId);
+
+        return response;
+
+    }
 
         @AfterEach
     protected void cleanUp() {

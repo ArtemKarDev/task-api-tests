@@ -3,6 +3,7 @@ package ru.learning.taskapitests.steps;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import ru.learning.taskapitests.client.TaskApiClient;
+import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,6 +49,17 @@ public class TaskSteps {
         return taskId;
     }
 
+    @Step("Создать задачу с помощью DTO и получить response")
+    public Response createDefaultTaskWithDto(CreateTaskRequest request){
+        Response response = taskApi.createTaskDTO(request);
+        checkStatus(response, 201);
+        Long taskId = response.jsonPath().getLong("id");
+
+        assertThat(taskId).as("ID созданной задачи").isPositive();
+        return response;
+
+    }
+
     @Step("Проверить данные задачи")
     public void checkTaskData(Response response,
                               long expectedId,
@@ -70,4 +82,43 @@ public class TaskSteps {
                 .as("Приоритет задачи")
                 .isEqualTo(expectedPriority);
     }
+
+    @Step("Проверить данные задачи")
+    public void checkResponseCreateTaskDataWithDto(Response response , CreateTaskRequest request){
+        assertThat(response.jsonPath().getLong("id"))
+                .as("ID задачи")
+                .isPositive();
+
+        assertThat(response.jsonPath().getString("title"))
+                .as("Название задачи")
+                .isEqualTo(request.getTitle());
+
+        assertThat(response.jsonPath().getString("status"))
+                .as("Статус задачи")
+                .isEqualTo(request.getStatus());
+
+        assertThat(response.jsonPath().getString("priority"))
+                .as("Приоритет задачи")
+                .isEqualTo(request.getPriority());
+    }
+
+    @Step("Проверить данные задачи")
+    public void checkResponseGetTaskDataWithDto(Response response , CreateTaskRequest request, Long taskId){
+        assertThat(response.jsonPath().getLong("id"))
+                .as("ID задачи")
+                .isEqualTo(taskId);
+
+        assertThat(response.jsonPath().getString("title"))
+                .as("Название задачи")
+                .isEqualTo(request.getTitle());
+
+        assertThat(response.jsonPath().getString("status"))
+                .as("Статус задачи")
+                .isEqualTo(request.getStatus());
+
+        assertThat(response.jsonPath().getString("priority"))
+                .as("Приоритет задачи")
+                .isEqualTo(request.getPriority());
+    }
+
 }
