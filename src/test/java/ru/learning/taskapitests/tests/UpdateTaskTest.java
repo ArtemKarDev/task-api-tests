@@ -3,7 +3,7 @@ package ru.learning.taskapitests.tests;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.TestBase;
-import ru.learning.taskapitests.data.TaskTestData;
+import ru.learning.taskapitests.data.TaskDataFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,16 +13,16 @@ public class UpdateTaskTest extends TestBase {
     @Test
     void shouldUpdateTask() {
 
-        long taskId = createTaskForTest(TaskTestData.validCreateTaskRequest());
+        long taskId = step.createTaskAndGetId(TaskDataFactory.validCreateTaskRequest());
 
-        Response updateResponse = taskApi.updateTask(taskId, TaskTestData.validUpdateRequestBody());
+        Response updateResponse = taskApi.updateTask(taskId, TaskDataFactory.validUpdateRequestBody());
 
-        steps.checkStatus(updateResponse, 200);
-        steps.checkTaskData(updateResponse,taskId,"Обновлённая задача","IN_PROGRESS","MEDIUM");
+        step.checkStatus(updateResponse, 200);
+        step.checkTaskData(updateResponse,taskId,"Обновлённая задача","IN_PROGRESS","MEDIUM");
 
-        Response getResponse = steps.getTask(taskId);
-        steps.checkStatus(getResponse, 200);
-        steps.checkTaskData(getResponse,taskId,"Обновлённая задача","IN_PROGRESS","MEDIUM");
+        Response getResponse = step.getTask(taskId);
+        step.checkStatus(getResponse, 200);
+        step.checkTaskData(getResponse,taskId,"Обновлённая задача","IN_PROGRESS","MEDIUM");
 
     }
 
@@ -31,10 +31,10 @@ public class UpdateTaskTest extends TestBase {
 
         long taskId = Long.MAX_VALUE;
 
-        Response updateResponse = taskApi.updateTask(taskId, TaskTestData.validUpdateRequestBody());
+        Response updateResponse = taskApi.updateTask(taskId, TaskDataFactory.validUpdateRequestBody());
 
-        steps.checkStatus(updateResponse, 404);
-        steps.checkErrorText(updateResponse,"Task not found with id: " + taskId);
+        step.checkStatus(updateResponse, 404);
+        step.checkErrorText(updateResponse,"Task not found with id: " + taskId);
     }
 
 }

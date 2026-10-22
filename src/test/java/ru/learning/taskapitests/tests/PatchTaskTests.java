@@ -3,7 +3,7 @@ package ru.learning.taskapitests.tests;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.TestBase;
-import ru.learning.taskapitests.data.TaskTestData;
+import ru.learning.taskapitests.data.TaskDataFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,9 +11,9 @@ public class PatchTaskTests extends TestBase {
 
     @Test
     void shouldPatchOnlyPriorityAndKeepOtherFields() {
-        long taskId = createTaskForTest(TaskTestData.validCreateTaskRequest());
+        long taskId = step.createTaskAndGetId(TaskDataFactory.validCreateTaskRequest());
 
-        Response patchResponse = taskApi.patchTask(taskId, TaskTestData.validPatchPriorityRequestBody());
+        Response patchResponse = taskApi.patchTask(taskId, TaskDataFactory.validPatchPriorityRequestBody());
         patchResponse.then().statusCode(200);
 
         assertThat(patchResponse.jsonPath().getString("title"))
@@ -41,7 +41,7 @@ public class PatchTaskTests extends TestBase {
 
         long taskId = Long.MAX_VALUE;
 
-        Response patchResponse = taskApi.patchTask(taskId, TaskTestData.validPatchPriorityRequestBody());
+        Response patchResponse = taskApi.patchTask(taskId, TaskDataFactory.validPatchPriorityRequestBody());
         patchResponse.then().statusCode(404);
 
         assertThat(patchResponse.jsonPath().getString("error"))
@@ -52,7 +52,7 @@ public class PatchTaskTests extends TestBase {
     @Test
     void shouldReturn400WhenPatchBodyIsEmpty() {
 
-        taskApi.patchTask(1,TaskTestData.emptyRequestBody()).then().statusCode(400);
+        taskApi.patchTask(1, TaskDataFactory.emptyRequestBody()).then().statusCode(400);
 
     }
 

@@ -1,56 +1,37 @@
 package ru.learning.taskapitests.tests;
 
-import io.qameta.allure.Step;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.TestBase;
-import ru.learning.taskapitests.data.TaskTestData;
-import ru.learning.taskapitests.generated.model.CreateTaskRequest;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import ru.learning.taskapitests.data.TaskDataFactory;
+import ru.learning.taskapitests.generated.model.Task;
 
 public class CreateTaskTests extends TestBase {
 
-
     @Test
-    void shouldCreateTaskAndGetItById() {
-
-        Response createResponse = taskApi.createTask(TaskTestData.validCreateTaskRequest());
-        steps.checkStatus(createResponse, 201);
-
-        long taskId = createResponse.jsonPath().getLong("id");
-
-        registerTaskForCleanup(taskId);
-
-        steps.checkTaskData(createResponse, taskId,"Автотестовая задача","NEW" , "HIGH");
-
-        Response getResponse = steps.getTask(taskId);
-        steps.checkStatus(getResponse, 200);
-        steps.checkTaskData(getResponse, taskId,"Автотестовая задача","NEW" , "HIGH");
-
+    void shouldCreateTaskAndGetItByIdWithDto() {
+        Response createResponse = step.createTaskDto(TaskDataFactory.defaultTaskRequestDTO());
+        step.checkResponseCreateTaskDataWithDto(createResponse, TaskDataFactory.defaultTaskRequestDTO());
+        Task getTask = taskApi.getTaskAsDto(createResponse.jsonPath().getLong("id"));
+        step.checkResponseGetTaskDataWithDto(getTask, TaskDataFactory.defaultTaskRequestDTO(),
+                createResponse.jsonPath().getLong("id"));
     }
 
     @Test
     void shouldReturn400WhenTitleIsMissing() {
-        Response response = taskApi.createTask(TaskTestData.invalidCreateTaskRequestWithoutTitle());
-        steps.checkStatus(response, 400);
+        Response response = step.createTask(TaskDataFactory.invalidCreateTaskRequestWithoutTitle());
+        step.checkStatus(response, 400);
+
     }
 
     @Test
+    @DisplayName("Запрос создания задачи с некорректным приоритетом")
     void shouldReturn400WhenPriorityIsInvalid() {
-        Response response = taskApi.createTask(TaskTestData.invalidCreateTaskRequestInvalidPriority());
-
-        assertThat(response.statusCode()).as("HTTP-статус при создании задачи с некорректным приоритетом").isEqualTo(400);
+        Response response = taskApi.createTask(TaskDataFactory.invalidCreateTaskRequestInvalidPriority());
+        step.checkStatus(response, 400);
     }
 
-    @Test
-    void shouldCreateTaskAndGetItByIdWithDto() {
 
-        Response createResponse = steps.createDefaultTaskWithDto(TaskTestData.defaultTaskRequestDTO());
-        steps.checkResponseCreateTaskDataWithDto(createResponse,TaskTestData.defaultTaskRequestDTO());
-        Response getResponse = steps.getTask(createResponse.jsonPath().getLong("id"));
-        steps.checkResponseGetTaskDataWithDto(getResponse, TaskTestData.defaultTaskRequestDTO(), createResponse.jsonPath().getLong("id"));
-
-    }
 
 }

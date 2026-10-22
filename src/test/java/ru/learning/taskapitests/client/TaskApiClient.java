@@ -1,25 +1,31 @@
 package ru.learning.taskapitests.client;
 
 import io.qameta.allure.Step;
-import io.restassured.mapper.ObjectMapperType;
 import io.restassured.response.Response;
-import org.springframework.beans.factory.annotation.Value;
 import ru.learning.taskapitests.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
+import ru.learning.taskapitests.generated.model.Task;
 import ru.learning.taskapitests.utils.AllureAttachments;
 import ru.learning.taskapitests.utils.JsonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 
 public class TaskApiClient {
 
     private static final String POST_TASK_CREATE = "/api/tasks";
+    private static final String GET_TASK = "/api/tasks";
+    private static final String UPDATE_TASK = "/api/tasks";
+    private static final String PATCH_TASK = "/api/tasks";
+    private static final String DELETE_TASK = "/api/tasks";
 
-    private void attachResponseDetails(Response response){
+    private void attachResponseDetails(Response response) {
         AllureAttachments.attachStatus(response.statusCode());
 
         String responseBody = response.asPrettyString();
-        if (!responseBody.isBlank()){
+        if (!responseBody.isBlank()) {
             AllureAttachments.attachResponse(responseBody);
         }
     }
@@ -33,15 +39,14 @@ public class TaskApiClient {
                 .spec(ApiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .post("/api/tasks");
+                .post(POST_TASK_CREATE);
 
         attachResponseDetails(response);
-
         return response;
     }
 
     @Step("Создать задачу с DTO")
-    public Response createTaskDTO(CreateTaskRequest request) {
+    public Response createTaskDto(CreateTaskRequest request) {
 
         AllureAttachments.attachRequest(JsonUtils.toJson(request));
 
@@ -59,6 +64,7 @@ public class TaskApiClient {
         return response;
     }
 
+
     @Step("Получить задачу по Id: : {taskId}")
     public Response getTaskById(long taskId) {
 
@@ -70,6 +76,18 @@ public class TaskApiClient {
         attachResponseDetails(response);
 
         return response;
+    }
+
+    @Step("Получить задачу по ID и обернуть в Task")
+    public Task getTaskAsDto(long taskId) {
+        Response response = given()
+                .spec(ApiSpec.requestSpec())
+                .when()
+                .get(GET_TASK + "/{id}", taskId);
+
+        attachResponseDetails(response);
+        return response.as(Task.class);
+
     }
 
     @Step("Обновить задачу целиком по Id: : {taskId}")
@@ -118,3 +136,5 @@ public class TaskApiClient {
 
 
 }
+
+

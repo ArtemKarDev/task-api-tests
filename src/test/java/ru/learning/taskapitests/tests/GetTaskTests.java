@@ -10,9 +10,9 @@ public class GetTaskTests extends TestBase {
     public void shouldReturn404WhenTaskDoesNotExist() {
         long nonexistentId = Long.MAX_VALUE;
 
-        Response response = steps.getTask(nonexistentId);
-        steps.checkStatus(response, 404);
-        steps.checkErrorText(response,"Task not found with id: " + nonexistentId);
+        Response response = step.getTask(nonexistentId);
+        step.checkStatus(response, 404);
+        step.checkErrorText(response,"Task not found with id: " + nonexistentId);
 
     }
 

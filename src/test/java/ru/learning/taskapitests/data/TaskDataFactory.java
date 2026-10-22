@@ -1,10 +1,11 @@
 package ru.learning.taskapitests.data;
 
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
-import ru.learning.taskapitests.generated.model.Task;
 
-public final class TaskTestData {
-    private TaskTestData() {
+import java.util.function.Consumer;
+
+public final class TaskDataFactory {
+    private TaskDataFactory() {
 
     }
 
@@ -17,6 +18,11 @@ public final class TaskTestData {
                 .assignee("tester");
     }
 
+    public static CreateTaskRequest customTaskRequestDTO(Consumer<CreateTaskRequest> customizer){
+        var request = defaultTaskRequestDTO();
+        customizer.accept(request);
+        return request;
+    }
 //    public static Task taskResponseDTO(){
 //
 //        return new Task()

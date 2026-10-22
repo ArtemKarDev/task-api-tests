@@ -3,13 +3,19 @@ package ru.learning.taskapitests.steps;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import ru.learning.taskapitests.client.TaskApiClient;
+import ru.learning.taskapitests.generated.model.ApiErrorResponse;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
+import ru.learning.taskapitests.generated.model.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TaskSteps {
 
     private final TaskApiClient taskApi;
+    private final List<Long> createdTaskIds = new ArrayList<>();
 
     public TaskSteps(TaskApiClient taskApi) {
         this.taskApi = taskApi;
@@ -31,34 +37,25 @@ public class TaskSteps {
                 .as("HTTP-статус ответа").isEqualTo(expectedStatus);
     }
 
-    @Step("Проверить текст ошибки {expectedError}")
-    public void checkErrorText(Response response, String expectedError) {
-        assertThat(response.jsonPath().getString("error"))
-                .as("текст ответа c ошибкой ").isEqualTo(expectedError);
+
+    @Step("Создать задачу")
+    public Response createTask(String requestBody) {
+        return taskApi.createTask(requestBody);
     }
-
     @Step("Создать задачу и получить её ID")
-    public long createTask(String requestBody) {
-        Response response = taskApi.createTask(requestBody);
-        checkStatus(response, 201);
-
-        Long taskId = response.jsonPath().getLong("id");
-
-        assertThat(taskId).as("ID созданной задачи").isPositive();
-
-        return taskId;
+    public long createTaskAndGetId(String requestBody) {
+        return createTask(requestBody).jsonPath().getLong("id");
     }
 
     @Step("Создать задачу с помощью DTO и получить response")
-    public Response createDefaultTaskWithDto(CreateTaskRequest request){
-        Response response = taskApi.createTaskDTO(request);
-        checkStatus(response, 201);
-        Long taskId = response.jsonPath().getLong("id");
-
-        assertThat(taskId).as("ID созданной задачи").isPositive();
-        return response;
-
+    public Response createTaskDto(CreateTaskRequest request){
+        return taskApi.createTaskDto(request);
     }
+
+//    @Step("Создать задачу, ожидая ошибку")
+//    public ApiErrorResponse createTaskExpectingError(){
+//
+//    }
 
     @Step("Проверить данные задачи")
     public void checkTaskData(Response response,
@@ -103,22 +100,46 @@ public class TaskSteps {
     }
 
     @Step("Проверить данные задачи")
-    public void checkResponseGetTaskDataWithDto(Response response , CreateTaskRequest request, Long taskId){
-        assertThat(response.jsonPath().getLong("id"))
+    public void checkResponseGetTaskDataWithDto(Task task, CreateTaskRequest request, Long taskId){
+        assertThat(task.getId())
                 .as("ID задачи")
                 .isEqualTo(taskId);
 
-        assertThat(response.jsonPath().getString("title"))
+        assertThat(task.getTitle())
                 .as("Название задачи")
                 .isEqualTo(request.getTitle());
 
-        assertThat(response.jsonPath().getString("status"))
+        assertThat(task.getStatus())
                 .as("Статус задачи")
                 .isEqualTo(request.getStatus());
 
-        assertThat(response.jsonPath().getString("priority"))
+        assertThat(task.getPriority())
                 .as("Приоритет задачи")
                 .isEqualTo(request.getPriority());
     }
 
+    @Step("Проверить текст ошибки {expectedError}")
+    public void checkErrorText(Response response, String expectedError) {
+        assertThat(response.jsonPath().getString("error"))
+                .as("текст ответа c ошибкой ").isEqualTo(expectedError);
+    }
+
+    public void clearTaskIdInCreatedList() {
+        createdTaskIds.clear();
+    }
+    public void cleanDbCreatedTasks() {
+        System.out.println("Очистка бд: " + createdTaskIds.toString());
+        for (Long taskId : createdTaskIds) {
+            int statusCode =
+                    deleteTask(taskId).then().extract().statusCode();
+            if (statusCode != 204 && statusCode != 404) {
+                throw new AssertionError("Неудалось удалить задачу с ID " + taskId + " HTTP-статус: " + statusCode);
+            }
+        }
+        createdTaskIds.clear();
+    }
+
+    protected void registerTaskForCleanup(Long taskId) {
+        createdTaskIds.add(taskId);
+    }
 }

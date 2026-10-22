@@ -2,7 +2,7 @@ package ru.learning.taskapitests.tests;
 
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.TestBase;
-import ru.learning.taskapitests.data.TaskTestData;
+import ru.learning.taskapitests.data.TaskDataFactory;
 import ru.learning.taskapitests.db.TaskDbRecord;
 import ru.learning.taskapitests.db.TaskRepository;
 
@@ -12,7 +12,7 @@ public class TaskDatabaseTests extends TestBase {
 
     @Test
     void shouldSaveCreatedTaskInDatabase() throws Exception {
-        long taskId = steps.createTask(TaskTestData.validCreateTaskRequest());
+        long taskId = step.createTaskAndGetId(TaskDataFactory.validCreateTaskRequest());
 
         TaskDbRecord taskFromDb = new TaskRepository().findById(taskId);
 
