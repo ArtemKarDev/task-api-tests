@@ -1,5 +1,7 @@
 package ru.learning.taskapitests.tests;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
@@ -7,9 +9,10 @@ import ru.learning.taskapitests.db.TaskDbRecord;
 import ru.learning.taskapitests.db.TaskRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+@Tag("db_tests")
 public class TaskDatabaseTests extends TestBase {
-
+    @Tag("smoke")
+    @DisplayName("")
     @Test
     void shouldSaveCreatedTaskInDatabase() throws Exception {
         long taskId = step.createTaskAndGetId(TaskDataFactory.validCreateTaskRequest());
