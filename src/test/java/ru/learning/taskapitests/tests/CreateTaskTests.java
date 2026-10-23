@@ -22,7 +22,6 @@ public class CreateTaskTests extends TestBase {
     void shouldReturn400WhenTitleIsMissing() {
         Response response = step.createTask(TaskDataFactory.invalidCreateTaskRequestWithoutTitle());
         step.checkStatus(response, 400);
-
     }
 
     @Test
@@ -31,7 +30,5 @@ public class CreateTaskTests extends TestBase {
         Response response = taskApi.createTask(TaskDataFactory.invalidCreateTaskRequestInvalidPriority());
         step.checkStatus(response, 400);
     }
-
-
 
 }

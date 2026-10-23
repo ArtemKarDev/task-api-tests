@@ -23,7 +23,7 @@ public class DeleteTaskTest extends TestBase {
 
         Response getResponse = step.getTask(taskId);
         step.checkStatus(getResponse, 404);
-        step.checkErrorText(response,"Task not found with id: " + taskId);
+        step.checkErrorText(getResponse,"Task not found with id: " + taskId);
     }
 
     @Test
