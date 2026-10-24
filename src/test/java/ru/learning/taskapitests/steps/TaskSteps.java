@@ -92,11 +92,11 @@ public class TaskSteps {
 
         assertThat(response.jsonPath().getString("status"))
                 .as("Статус задачи")
-                .isEqualTo(request.getStatus());
+                .isEqualTo(request.getStatus().toString());
 
         assertThat(response.jsonPath().getString("priority"))
                 .as("Приоритет задачи")
-                .isEqualTo(request.getPriority());
+                .isEqualTo(request.getPriority().toString());
     }
 
     @Step("Проверить данные задачи")
@@ -111,11 +111,11 @@ public class TaskSteps {
 
         assertThat(task.getStatus())
                 .as("Статус задачи")
-                .isEqualTo(request.getStatus());
+                .isEqualTo( Task.StatusEnum.valueOf(request.getStatus().name()));
 
         assertThat(task.getPriority())
                 .as("Приоритет задачи")
-                .isEqualTo(request.getPriority());
+                .isEqualTo(Task.PriorityEnum.valueOf(request.getPriority().name()));
     }
 
     @Step("Проверить текст ошибки {expectedError}")

@@ -8,8 +8,9 @@ import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
-@Tag("regress")
+@Tag("regression")
 @Tag("api_tests")
+@DisplayName("Запросы обновления задач")
 public class UpdateTaskTest extends TestBase {
 
     @Tag("smoke")

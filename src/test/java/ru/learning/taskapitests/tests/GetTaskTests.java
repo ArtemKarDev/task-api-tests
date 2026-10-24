@@ -4,7 +4,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.TestBase;
-@Tag("regress")
+@Tag("regression")
 @Tag("api_tests")
 public class GetTaskTests extends TestBase {
 

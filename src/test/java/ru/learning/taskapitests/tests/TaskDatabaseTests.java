@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("db_tests")
 public class TaskDatabaseTests extends TestBase {
     @Tag("smoke")
-    @DisplayName("")
+    @DisplayName("Отправить запрос на создание задачи и проверить БД")
     @Test
     void shouldSaveCreatedTaskInDatabase() throws Exception {
         long taskId = step.createTaskAndGetId(TaskDataFactory.validCreateTaskRequest());

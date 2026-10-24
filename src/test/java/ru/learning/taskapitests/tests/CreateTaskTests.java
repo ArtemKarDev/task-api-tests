@@ -8,12 +8,12 @@ import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
 import ru.learning.taskapitests.generated.model.Task;
 
-@Tag("regress")
+@Tag("regression")
 @Tag("api_tests")
 public class CreateTaskTests extends TestBase {
 
     @Tag("smoke")
-    @DisplayName("Отправить запрос на создание задачи и её получения по ID ")
+    @DisplayName("Запрос на создание задачи и её получения по ID ")
     @Test
     void shouldCreateTaskAndGetItByIdWithDto() {
         Response createResponse = step.createTaskDto(TaskDataFactory.defaultTaskRequestDTO());

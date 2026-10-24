@@ -13,8 +13,8 @@ public final class TaskDataFactory {
         return new CreateTaskRequest()
                 .title("Автотестовая задача")
                 .description("Создана через REST Assured")
-                .status("NEW")
-                .priority("HIGH")
+                .status(CreateTaskRequest.StatusEnum.NEW)
+                .priority(CreateTaskRequest.PriorityEnum.MEDIUM)
                 .assignee("tester");
     }
 
