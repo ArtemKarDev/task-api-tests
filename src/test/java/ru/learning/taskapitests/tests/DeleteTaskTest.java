@@ -4,15 +4,17 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
-@Tag("regression")
-@Tag("api_tests")
+@Tag(Tags.REGRESSION)
+@Tag(Tags.API)
+@DisplayName("Запросы удаленя задач")
 public class DeleteTaskTest extends TestBase {
 
-    @Tag("smoke")
+    @Tag(Tags.SMOKE)
     @DisplayName("Запрос удаления задачи по ID и её получения")
     @Test
     public void shouldDeleteTaskAndReturn404WhenGettingIt() {
@@ -31,7 +33,7 @@ public class DeleteTaskTest extends TestBase {
     }
 
     @Test
-    @Tag("negative")
+    @Tag(Tags.NEGATIVE)
     public void shouldReturn404WhenDeleteNonexistentTask(){
 
         long taskId = Long.MAX_VALUE;

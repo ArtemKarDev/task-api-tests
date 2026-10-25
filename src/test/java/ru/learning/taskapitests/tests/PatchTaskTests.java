@@ -4,14 +4,16 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
-@Tag("regression")
-@Tag("api_tests")
+@Tag(Tags.REGRESSION)
+@Tag(Tags.API)
+@DisplayName("Запросы частичного обновления задач")
 public class PatchTaskTests extends TestBase {
-    @Tag("smoke")
+    @Tag(Tags.SMOKE)
     @DisplayName("Запрос на обновление атриута задачи")
     @Test
     void shouldPatchOnlyPriorityAndKeepOtherFields() {
@@ -41,7 +43,7 @@ public class PatchTaskTests extends TestBase {
     }
 
     @Test
-    @Tag("negative")
+    @Tag(Tags.NEGATIVE)
     void shouldReturn404WhenNonexistentTask() {
 
         long taskId = Long.MAX_VALUE;
@@ -55,7 +57,7 @@ public class PatchTaskTests extends TestBase {
     }
 
     @Test
-    @Tag("negative")
+    @Tag(Tags.NEGATIVE)
     void shouldReturn400WhenPatchBodyIsEmpty() {
 
         taskApi.patchTask(1, TaskDataFactory.emptyRequestBody()).then().statusCode(400);

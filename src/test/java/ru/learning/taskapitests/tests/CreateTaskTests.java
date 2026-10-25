@@ -4,15 +4,17 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
 import ru.learning.taskapitests.generated.model.Task;
 
-@Tag("regression")
-@Tag("api_tests")
+@Tag(Tags.REGRESSION)
+@Tag(Tags.API)
+@DisplayName("Запросы создания задач")
 public class CreateTaskTests extends TestBase {
 
-    @Tag("smoke")
+    @Tag(Tags.SMOKE)
     @DisplayName("Запрос на создание задачи и её получения по ID ")
     @Test
     void shouldCreateTaskAndGetItByIdWithDto() {
@@ -23,7 +25,7 @@ public class CreateTaskTests extends TestBase {
                 createResponse.jsonPath().getLong("id"));
     }
 
-    @Tag("negative")
+    @Tag(Tags.NEGATIVE)
     @DisplayName("Запрос создания задачи без названия")
     @Test
     void shouldReturn400WhenTitleIsMissing() {
@@ -31,7 +33,7 @@ public class CreateTaskTests extends TestBase {
         step.checkStatus(response, 400);
     }
 
-    @Tag("negative")
+    @Tag(Tags.NEGATIVE)
     @Test
     @DisplayName("Запрос создания задачи с некорректным приоритетом")
     void shouldReturn400WhenPriorityIsInvalid() {

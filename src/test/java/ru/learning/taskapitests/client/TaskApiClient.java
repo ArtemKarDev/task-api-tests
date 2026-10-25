@@ -2,14 +2,11 @@ package ru.learning.taskapitests.client;
 
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import ru.learning.taskapitests.ApiSpec;
+import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
 import ru.learning.taskapitests.utils.AllureAttachments;
 import ru.learning.taskapitests.utils.JsonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 

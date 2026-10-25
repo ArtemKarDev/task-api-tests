@@ -1,15 +1,18 @@
 package ru.learning.taskapitests.tests;
 
 import io.restassured.response.Response;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
-@Tag("regression")
-@Tag("api_tests")
+@Tag(Tags.REGRESSION)
+@Tag(Tags.API)
+@DisplayName("Запросы получения задач")
 public class GetTaskTests extends TestBase {
 
     @Test
-    @Tag("negative")
+    @Tag(Tags.NEGATIVE)
     public void shouldReturn404WhenTaskDoesNotExist() {
         long nonexistentId = Long.MAX_VALUE;
 

@@ -1,6 +1,0 @@
-task-api-service:
-  url: ${base.url}
-  task:
-    get: "/api/tasks"
-  task_create:
-    post: "/api/tasks"

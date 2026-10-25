@@ -11,7 +11,7 @@ public class TestBase {
     protected TaskSteps step;
 
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         taskApi = new TaskApiClient();
         step = new TaskSteps(taskApi);
         step.clearTaskIdInCreatedList();

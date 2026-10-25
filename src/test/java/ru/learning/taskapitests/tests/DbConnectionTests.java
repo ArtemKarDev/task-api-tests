@@ -1,7 +1,9 @@
 package ru.learning.taskapitests.tests;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.db.DbClient;
 
 import java.sql.Connection;
@@ -10,7 +12,8 @@ import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("db_tests")
+@Tag(Tags.DB)
+@DisplayName("Тест подключения к БД")
 public class DbConnectionTests {
 
     @Test
