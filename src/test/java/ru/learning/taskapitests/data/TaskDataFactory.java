@@ -2,6 +2,7 @@ package ru.learning.taskapitests.data;
 
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public final class TaskDataFactory {
@@ -9,29 +10,20 @@ public final class TaskDataFactory {
 
     }
 
-    public static CreateTaskRequest defaultTaskRequestDTO(){
+    public static CreateTaskRequest defaultTaskRequestDTO() {
         return new CreateTaskRequest()
-                .title("Автотестовая задача")
+                .title(uniqueTitle("Автотест"))
                 .description("Создана через REST Assured")
                 .status(CreateTaskRequest.StatusEnum.NEW)
                 .priority(CreateTaskRequest.PriorityEnum.MEDIUM)
                 .assignee("tester");
     }
 
-    public static CreateTaskRequest customTaskRequestDTO(Consumer<CreateTaskRequest> customizer){
+    public static CreateTaskRequest customTaskRequestDTO(Consumer<CreateTaskRequest> customizer) {
         var request = defaultTaskRequestDTO();
         customizer.accept(request);
         return request;
     }
-//    public static Task taskResponseDTO(){
-//
-//        return new Task()
-//                .title("Автотестовая задача")
-//                .description("Создана через REST Assured")
-//                .status("NEW")
-//                .priority("HIGH")
-//                .assignee("tester");
-//    }
 
 
     public static String validCreateTaskRequest() {
@@ -89,8 +81,16 @@ public final class TaskDataFactory {
                 """;
     }
 
-    public static String emptyRequestBody(){
+    public static String emptyRequestBody() {
         return "{}";
+    }
+
+    private static String uniqueSuffix() {
+        return UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    public static String uniqueTitle(String prefix) {
+        return prefix + " " + uniqueSuffix();
     }
 
 }

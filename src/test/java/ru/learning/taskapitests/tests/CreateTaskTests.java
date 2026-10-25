@@ -18,11 +18,15 @@ public class CreateTaskTests extends TestBase {
     @DisplayName("Запрос на создание задачи и её получения по ID ")
     @Test
     void shouldCreateTaskAndGetItByIdWithDto() {
-        Response createResponse = step.createTaskDto(TaskDataFactory.defaultTaskRequestDTO());
-        step.checkResponseCreateTaskDataWithDto(createResponse, TaskDataFactory.defaultTaskRequestDTO());
-        Task getTask = taskApi.getTaskAsDto(createResponse.jsonPath().getLong("id"));
-        step.checkResponseGetTaskDataWithDto(getTask, TaskDataFactory.defaultTaskRequestDTO(),
-                createResponse.jsonPath().getLong("id"));
+        var request = TaskDataFactory.defaultTaskRequestDTO();
+
+        Response createResponse = step.createTaskDto(request);
+        step.checkStatus(createResponse, 201);
+        step.checkResponseCreateTaskDataWithDto(createResponse, request);
+
+        long taskId = step.getTaskIdFromResponse(createResponse);
+        Task getTask = taskApi.getTaskAsDto(taskId);
+        step.checkResponseGetTaskDataWithDto(getTask, request, taskId);
     }
 
     @Tag(Tags.NEGATIVE)

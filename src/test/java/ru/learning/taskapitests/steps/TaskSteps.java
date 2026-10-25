@@ -3,9 +3,10 @@ package ru.learning.taskapitests.steps;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import ru.learning.taskapitests.client.TaskApiClient;
-import ru.learning.taskapitests.generated.model.ApiErrorResponse;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,8 @@ public class TaskSteps {
 
     private final TaskApiClient taskApi;
     private final List<Long> createdTaskIds = new ArrayList<>();
+
+    public static final Logger log = LoggerFactory.getLogger(TaskSteps.class);
 
     public TaskSteps(TaskApiClient taskApi) {
         this.taskApi = taskApi;
@@ -40,16 +43,17 @@ public class TaskSteps {
 
     @Step("Создать задачу")
     public Response createTask(String requestBody) {
-        return taskApi.createTask(requestBody);
+        return registerForCleanup(taskApi.createTask(requestBody));
     }
+
     @Step("Создать задачу и получить её ID")
     public long createTaskAndGetId(String requestBody) {
         return createTask(requestBody).jsonPath().getLong("id");
     }
 
     @Step("Создать задачу с помощью DTO и получить response")
-    public Response createTaskDto(CreateTaskRequest request){
-        return taskApi.createTaskDto(request);
+    public Response createTaskDto(CreateTaskRequest request) {
+        return registerForCleanup(taskApi.createTaskDto(request));
     }
 
 //    @Step("Создать задачу, ожидая ошибку")
@@ -81,7 +85,7 @@ public class TaskSteps {
     }
 
     @Step("Проверить данные задачи")
-    public void checkResponseCreateTaskDataWithDto(Response response , CreateTaskRequest request){
+    public void checkResponseCreateTaskDataWithDto(Response response, CreateTaskRequest request) {
         assertThat(response.jsonPath().getLong("id"))
                 .as("ID задачи")
                 .isPositive();
@@ -100,7 +104,7 @@ public class TaskSteps {
     }
 
     @Step("Проверить данные задачи")
-    public void checkResponseGetTaskDataWithDto(Task task, CreateTaskRequest request, Long taskId){
+    public void checkResponseGetTaskDataWithDto(Task task, CreateTaskRequest request, Long taskId) {
         assertThat(task.getId())
                 .as("ID задачи")
                 .isEqualTo(taskId);
@@ -111,7 +115,7 @@ public class TaskSteps {
 
         assertThat(task.getStatus())
                 .as("Статус задачи")
-                .isEqualTo( Task.StatusEnum.valueOf(request.getStatus().name()));
+                .isEqualTo(Task.StatusEnum.valueOf(request.getStatus().name()));
 
         assertThat(task.getPriority())
                 .as("Приоритет задачи")
@@ -127,8 +131,9 @@ public class TaskSteps {
     public void clearTaskIdInCreatedList() {
         createdTaskIds.clear();
     }
+
     public void cleanDbCreatedTasks() {
-        System.out.println("Очистка бд: " + createdTaskIds.toString());
+        log.info("Очистка БД, задачи на удаление: {}", createdTaskIds);
         for (Long taskId : createdTaskIds) {
             int statusCode =
                     deleteTask(taskId).then().extract().statusCode();
@@ -141,5 +146,17 @@ public class TaskSteps {
 
     protected void registerTaskForCleanup(Long taskId) {
         createdTaskIds.add(taskId);
+    }
+
+    public Long getTaskIdFromResponse(Response response) {
+        return response.jsonPath().getLong("id");
+    }
+
+
+    private Response registerForCleanup(Response response) {
+        if (response.statusCode() == 201) {
+            registerTaskForCleanup(response.jsonPath().getLong("id"));
+        }
+        return response;
     }
 }
