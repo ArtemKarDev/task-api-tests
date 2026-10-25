@@ -2,6 +2,7 @@ package ru.learning.taskapitests.ui.components;
 
 import com.codeborne.selenide.SelenideElement;
 import ru.learning.taskapitests.ui.pages.AboutPage;
+import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 import ru.learning.taskapitests.ui.pages.LoginPage;
 import ru.learning.taskapitests.ui.pages.TasksPage;
 
@@ -50,5 +51,8 @@ public class Header {
         return new LoginPage();
     }
 
-
+    public CreateTaskPage openCreateForm() {
+        createLink().click();
+        return new CreateTaskPage();
+    }
 }

@@ -2,6 +2,7 @@ package ru.learning.taskapitests.ui.components;
 
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import ru.learning.taskapitests.ui.pages.EditTaskPage;
 
 public class TaskRow {
 
@@ -54,6 +55,11 @@ public class TaskRow {
     public void deleteAndCancel() {
         deleteButton().click();
         Selenide.dismiss();
+    }
+
+    public EditTaskPage openEdit() {
+        editButton().click();
+        return new EditTaskPage();
     }
 
 }

@@ -11,6 +11,7 @@ import ru.learning.taskapitests.data.TaskDataFactory;
 import ru.learning.taskapitests.ui.UiTestBase;
 import ru.learning.taskapitests.ui.components.TaskRow;
 import ru.learning.taskapitests.ui.pages.AboutPage;
+import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 import ru.learning.taskapitests.ui.pages.LoginPage;
 import ru.learning.taskapitests.ui.pages.TasksPage;
 
@@ -70,5 +71,39 @@ class UiWiringSmokeTest extends UiTestBase {
         tasksPage.flash().shouldHave(text("Задача удалена"));
         tasksPage.rowById(id).root().shouldNot(exist);
 
+    }
+
+    @Test
+    @DisplayName("Page Object: создание задачи через форму")
+    void shouldCreateTaskThroughForm() {
+        String title = "Форма " + UUID.randomUUID();
+
+        CreateTaskPage createPage = new TasksPage().open().header().openCreateForm();
+        createPage.form()
+                .fillTitle(title)
+                .fillAssignee("tester")
+                .selectPriority("HIGH")
+                .selectStatus("NEW");
+        TasksPage tasksPage = createPage.submitValid();
+
+        tasksPage.flash().shouldHave(text("Задача создана"));
+        TaskRow row = tasksPage.rowByTitle(title);
+        row.priority().shouldHave(exactText("HIGH"));
+        row.status().shouldHave(exactText("NEW"));
+
+        row.deleteAndConfirm();
+    }
+
+    @Test
+    @DisplayName("Пустая форма создания показывает ошибки у обязательных полей")
+    void shouldShowErrorsForEmptyCreateForm() {
+        CreateTaskPage page = new CreateTaskPage().open();
+
+        page.submitInvalid();
+
+        page.form().titleError().shouldHave(exactText("Введите название задачи"));
+        page.form().assigneeError().shouldHave(exactText("Укажите исполнителя"));
+        page.form().priorityError().shouldHave(exactText("Выберите приоритет"));
+        page.form().statusError().shouldHave(exactText("Выберите статус"));
     }
 }
