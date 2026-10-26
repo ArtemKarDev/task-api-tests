@@ -1,4 +1,4 @@
-package ru.learning.taskapitests.tests;
+package ru.learning.taskapitests.tests.db;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;

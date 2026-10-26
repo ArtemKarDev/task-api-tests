@@ -1,4 +1,4 @@
-package ru.learning.taskapitests.tests;
+package ru.learning.taskapitests.tests.api;
 
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;

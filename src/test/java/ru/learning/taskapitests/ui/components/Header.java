@@ -55,4 +55,8 @@ public class Header {
         createLink().click();
         return new CreateTaskPage();
     }
+    public TasksPage goHome() {
+        brand().click();
+        return new TasksPage();
+    }
 }

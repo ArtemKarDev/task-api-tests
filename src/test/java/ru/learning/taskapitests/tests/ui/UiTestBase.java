@@ -1,20 +1,27 @@
-package ru.learning.taskapitests.ui;
+package ru.learning.taskapitests.tests.ui;
 
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.config.TestConfig;
+import ru.learning.taskapitests.steps.ui.NavigationUiSteps;
+import ru.learning.taskapitests.steps.ui.TaskUiSteps;
+import ru.learning.taskapitests.ui.ScreenshotOnFailureExtension;
 
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 
+@ExtendWith(ScreenshotOnFailureExtension.class)
 public class UiTestBase extends TestBase {
 
     public static final String ALLURE_LISTENER_NAME = "AllureSelenide";
+
+    protected TaskUiSteps uiStep;
+    protected NavigationUiSteps navStep;
 
     @BeforeAll
     public static void configureSelenide(){
@@ -34,11 +41,17 @@ public class UiTestBase extends TestBase {
     }
 
     @BeforeEach
+    protected void createUiSteps(){
+        uiStep = new TaskUiSteps();
+        navStep = new NavigationUiSteps();
+    }
+
+    @BeforeEach
     protected void addAllureListener(){
         SelenideLogger.addListener(ALLURE_LISTENER_NAME,
                 new AllureSelenide()
-                        .screenshots(true)
-                        .savePageSource(true));
+                        .screenshots(false)
+                        .savePageSource(false));
     }
 
     @AfterEach

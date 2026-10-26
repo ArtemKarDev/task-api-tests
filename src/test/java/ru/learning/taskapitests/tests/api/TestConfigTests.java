@@ -1,4 +1,4 @@
-package ru.learning.taskapitests.tests;
+package ru.learning.taskapitests.tests.api;
 
 import io.qameta.allure.Allure;
 import io.qameta.allure.Epic;
