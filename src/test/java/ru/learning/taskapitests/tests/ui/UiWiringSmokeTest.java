@@ -94,16 +94,5 @@ class UiWiringSmokeTest extends UiTestBase {
         row.deleteAndConfirm();
     }
 
-    @Test
-    @DisplayName("Пустая форма создания показывает ошибки у обязательных полей")
-    void shouldShowErrorsForEmptyCreateForm() {
-        CreateTaskPage page = new CreateTaskPage().open();
 
-        page.submitInvalid();
-
-        page.form().titleError().shouldHave(exactText("Введите название задачи"));
-        page.form().assigneeError().shouldHave(exactText("Укажите исполнителя"));
-        page.form().priorityError().shouldHave(exactText("Выберите приоритет"));
-        page.form().statusError().shouldHave(exactText("Выберите статус"));
-    }
 }

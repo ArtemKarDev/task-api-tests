@@ -1,5 +1,6 @@
 package ru.learning.taskapitests.ui.components;
 
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
 import static com.codeborne.selenide.Selenide.$;
@@ -48,6 +49,10 @@ public class TaskForm {
         return root.$("[data-testid=status-error]");
     }
 
+    public ElementsCollection errors() {
+        return root.$$("[data-testid$='-error']");
+    }
+
     public SelenideElement submitButton() {
         return root.$("[data-testid=submit-btn]");
     }
@@ -84,4 +89,6 @@ public class TaskForm {
     public void submit() {
         submitButton().click();
     }
+
+
 }

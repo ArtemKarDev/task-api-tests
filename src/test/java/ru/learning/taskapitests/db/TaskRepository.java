@@ -14,11 +14,11 @@ public class TaskRepository {
                 """;
 
         try (Connection connection = DbClient.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)){
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, taskId);
 
-            try(ResultSet resultSet = statement.executeQuery()){
-                if (!resultSet.next()){
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
                     return null;
                 }
 
@@ -32,4 +32,16 @@ public class TaskRepository {
             }
         }
     }
+
+    public long countAll() throws SQLException {
+        String sql = "SELECT count(*) FROM tasks";
+
+        try (Connection connection = DbClient.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            resultSet.next();
+            return resultSet.getLong(1);
+        }
+    }
+
 }
