@@ -57,4 +57,13 @@ public class NavigationUiSteps {
         new Header().activeLink().shouldNot(exist);
     }
 
+    @Step("Открыть страницу создания задачи")
+    public CreateTaskPage openCreateTaskPage(){
+        return new CreateTaskPage().open();
+    }
+
+
+
+
+
 }

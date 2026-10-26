@@ -1,4 +1,4 @@
-package ru.learning.taskapitests.tests.ui;
+package ru.learning.taskapitests.ui;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.logevents.SelenideLogger;
@@ -42,7 +42,7 @@ public class UiTestBase extends TestBase {
 
     @BeforeEach
     protected void createUiSteps(){
-        uiStep = new TaskUiSteps();
+        uiStep = new TaskUiSteps(step);
         navStep = new NavigationUiSteps();
     }
 

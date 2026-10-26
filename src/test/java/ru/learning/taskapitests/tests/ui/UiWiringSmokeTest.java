@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.data.TaskDataFactory;
+import ru.learning.taskapitests.ui.UiTestBase;
 import ru.learning.taskapitests.ui.components.TaskRow;
 import ru.learning.taskapitests.ui.pages.AboutPage;
 import ru.learning.taskapitests.ui.pages.CreateTaskPage;

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.data.TaskDataFactory;
+import ru.learning.taskapitests.ui.UiTestBase;
 import ru.learning.taskapitests.ui.pages.TasksPage;
 
 import static com.codeborne.selenide.Condition.visible;

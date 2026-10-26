@@ -144,7 +144,7 @@ public class TaskSteps {
         createdTaskIds.clear();
     }
 
-    protected void registerTaskForCleanup(Long taskId) {
+    public void registerTaskForCleanup(Long taskId) {
         createdTaskIds.add(taskId);
     }
 
