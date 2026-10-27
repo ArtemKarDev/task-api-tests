@@ -90,7 +90,7 @@ pipeline {
                       -w /workspace \
                       -e TEST_ENV="$STAND" \
                       -e TEST_GROUPS="$TESTS" \
-                      -e BASE_URL="http://app:8080" \
+                      -e BASE_URL="http://task-app:8080" \
                       -e DB_URL="jdbc:postgresql://postgres:5432/${DB_NAME}" \
                       -e DB_USER -e DB_PASSWORD \
                       $BROWSER_ARGS \
@@ -122,7 +122,7 @@ pipeline {
                     {
                         echo "Stand=${STAND}"
                         echo "Tests=${TESTS}"
-                        echo "Base_URL=http://app:8080"
+                        echo "Base_URL=http://task-app:8080"
                         if [ "$NEED_BROWSER" = "true" ]; then echo "Browser=${BROWSER}"; else echo "Browser=not_used"; fi
                         echo "App_image_id=$(docker inspect -f '{{.Image}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null | cut -c8-19)"
                         echo "App_started=$(docker inspect -f '{{.State.StartedAt}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null)"
