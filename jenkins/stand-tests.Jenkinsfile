@@ -1,0 +1,98 @@
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    parameters {
+        choice(name: 'STAND', choices: ['stage', 'dev'], description: 'Стенд, против которого запускаются тесты')
+        choice(name: 'TESTS', choices: ['api | db', 'api', 'db', 'unit'], description: 'Теги JUnit (параметр -Dgroups)')
+    }
+
+    environment {
+        MAVEN_IMAGE = 'maven:3.9.16-eclipse-temurin-21'
+    }
+
+    stages {
+        stage('Prepare') {
+            steps {
+                script {
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} ${params.STAND}: ${params.TESTS}"
+                    env.START_TS = sh(returnStdout: true, script: 'date -u +%Y-%m-%dT%H:%M:%SZ').trim()
+                }
+            }
+        }
+
+        stage('Check stand') {
+            steps {
+                withCredentials([file(credentialsId: "env-${params.STAND}", variable: 'ENV_FILE')]) {
+                    sh '''
+                        set -eu
+                        tr -d '\\r' < "$ENV_FILE" > "/tmp/stand-${BUILD_NUMBER}.env"
+                        set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
+
+                        STATE=$(docker inspect -f '{{.State.Health.Status}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null || echo missing)
+                        echo "Состояние приложения стенда ${STAND}: $STATE"
+                        [ "$STATE" = "healthy" ] || { echo "Стенд не готов: запустите задание stand-deploy (STAND=${STAND}, ACTION=up)"; exit 1; }
+                    '''
+                }
+            }
+        }
+
+        stage('Run tests') {
+            steps {
+                sh '''
+                    set -eu
+                    set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
+
+                    NETWORK="${COMPOSE_PROJECT_NAME}_default"
+                    CONTAINER="stand-tests-${BUILD_NUMBER}"
+                    ARCHIVE="/tmp/tests-source-${BUILD_NUMBER}.tar.gz"
+
+                    tar czf "$ARCHIVE" --exclude=.git --exclude=target --exclude=allure-results --exclude=surefire-reports -C "$WORKSPACE" .
+
+                    docker create \
+                      --name "$CONTAINER" \
+                      --network "$NETWORK" \
+                      -v tests-m2-cache:/root/.m2 \
+                      -w /workspace \
+                      -e TEST_ENV="$STAND" \
+                      -e TEST_GROUPS="$TESTS" \
+                      -e BASE_URL="http://app:8080" \
+                      -e DB_URL="jdbc:postgresql://postgres:5432/${DB_NAME}" \
+                      -e DB_USER -e DB_PASSWORD \
+                      --entrypoint sh \
+                      "$MAVEN_IMAGE" \
+                      -c 'tar xzf /tmp/tests-source.tar.gz -C /workspace && cd /workspace && mvn -B test "-Dgroups=$TEST_GROUPS"'
+
+                    docker cp "$ARCHIVE" "$CONTAINER:/tmp/tests-source.tar.gz"
+                    docker start -a "$CONTAINER"
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            sh '''
+                CONTAINER="stand-tests-${BUILD_NUMBER}"
+                rm -rf allure-results surefire-reports
+                docker cp "$CONTAINER:/workspace/target/allure-results" allure-results || true
+                docker cp "$CONTAINER:/workspace/target/surefire-reports" surefire-reports || true
+
+                if [ -f "/tmp/stand-${BUILD_NUMBER}.env" ]; then
+                    set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
+                    docker logs --since "$START_TS" "${COMPOSE_PROJECT_NAME}-app-1" > stand-app.log 2>&1 || true
+                    docker logs --since "$START_TS" "${COMPOSE_PROJECT_NAME}-postgres-1" > stand-postgres.log 2>&1 || true
+                fi
+
+                docker rm -f "$CONTAINER" 2>/dev/null || true
+                rm -f "/tmp/stand-${BUILD_NUMBER}.env" "/tmp/tests-source-${BUILD_NUMBER}.tar.gz"
+            '''
+            junit allowEmptyResults: true, testResults: 'surefire-reports/*.xml'
+            archiveArtifacts artifacts: 'stand-*.log, allure-results/**', allowEmptyArchive: true
+        }
+    }
+}
