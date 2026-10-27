@@ -81,11 +81,22 @@ pipeline {
                 rm -rf allure-results surefire-reports
                 docker cp "$CONTAINER:/workspace/target/allure-results" allure-results || true
                 docker cp "$CONTAINER:/workspace/target/surefire-reports" surefire-reports || true
+                mkdir -p allure-results
 
                 if [ -f "/tmp/stand-${BUILD_NUMBER}.env" ]; then
                     set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
                     docker logs --since "$START_TS" "${COMPOSE_PROJECT_NAME}-app-1" > stand-app.log 2>&1 || true
                     docker logs --since "$START_TS" "${COMPOSE_PROJECT_NAME}-postgres-1" > stand-postgres.log 2>&1 || true
+
+                    {
+                        echo "Stand=${STAND}"
+                        echo "Tests=${TESTS}"
+                        echo "Base_URL=http://app:8080"
+                        echo "App_image_id=$(docker inspect -f '{{.Image}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null | cut -c8-19)"
+                        echo "App_started=$(docker inspect -f '{{.State.StartedAt}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null)"
+                        echo "Tests_commit=$(git -C "$WORKSPACE" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+                        echo "Jenkins_build=${BUILD_URL}"
+                    } > allure-results/environment.properties
                 fi
 
                 docker rm -f "$CONTAINER" 2>/dev/null || true
