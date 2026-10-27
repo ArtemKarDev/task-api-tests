@@ -1,4 +1,4 @@
-package ru.learning.taskapitests.suites;
+package ru.learning.taskapitests.utils.suites;
 
 import org.junit.platform.suite.api.IncludeTags;
 import org.junit.platform.suite.api.SelectPackages;

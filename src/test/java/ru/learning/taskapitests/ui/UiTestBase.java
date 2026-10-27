@@ -9,9 +9,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.config.TestConfig;
+import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.steps.ui.NavigationUiSteps;
 import ru.learning.taskapitests.steps.ui.TaskUiSteps;
-import ru.learning.taskapitests.ui.ScreenshotOnFailureExtension;
+import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 
@@ -24,7 +25,7 @@ public class UiTestBase extends TestBase {
     protected NavigationUiSteps navStep;
 
     @BeforeAll
-    public static void configureSelenide(){
+    public static void configureSelenide() {
         Configuration.baseUrl = TestConfig.getBaseUrl();
         Configuration.browser = TestConfig.getBrowser();
         Configuration.headless = TestConfig.isHeadless();
@@ -41,13 +42,13 @@ public class UiTestBase extends TestBase {
     }
 
     @BeforeEach
-    protected void createUiSteps(){
+    protected void createUiSteps() {
         uiStep = new TaskUiSteps(step);
         navStep = new NavigationUiSteps();
     }
 
     @BeforeEach
-    protected void addAllureListener(){
+    protected void addAllureListener() {
         SelenideLogger.addListener(ALLURE_LISTENER_NAME,
                 new AllureSelenide()
                         .screenshots(false)
@@ -55,9 +56,21 @@ public class UiTestBase extends TestBase {
     }
 
     @AfterEach
-    protected void closeBrowser(){
+    protected void closeBrowser() {
         SelenideLogger.removeListener(ALLURE_LISTENER_NAME);
         closeWebDriver();
     }
 
+    protected CreateTaskPage submitInvalidCreateFormAndCheckNothingSaved(CreateTaskRequest request, int expectedErrors) {
+
+        long before = dbStep.getTasksCount();
+
+        CreateTaskPage page = uiStep.submitFormWithErrors(navStep.openCreateTaskPage(), request);
+
+        navStep.checkPageOpened(page, "Создание задачи", "/tasks");
+        uiStep.checkFormErrorsCount(page, expectedErrors);
+        dbStep.checkTasksCount(before);
+        return page;
+
+    }
 }

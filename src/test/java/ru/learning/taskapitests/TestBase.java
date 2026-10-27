@@ -10,14 +10,14 @@ public class TestBase {
 
     protected TaskApiClient taskApi;
     protected TaskSteps step;
-    protected DbSteps dbSteps;
+    protected DbSteps dbStep;
 
     @BeforeEach
     protected void setUp() {
         taskApi = new TaskApiClient();
         step = new TaskSteps(taskApi);
         step.clearTaskIdInCreatedList();
-        dbSteps = new DbSteps();
+        dbStep = new DbSteps();
     }
 
 

@@ -15,9 +15,6 @@ import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.ui.UiTestBase;
 import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 
-import java.sql.SQLException;
-
-import static com.codeborne.selenide.Condition.exactText;
 
 @Tag(Tags.UI)
 @Tag(Tags.REGRESSION)
@@ -31,11 +28,11 @@ public class CreateTaskValidationUiTests extends UiTestBase {
     @NullAndEmptySource
     @ValueSource(strings = {" ", " "})
     @DisplayName("Пустое или пробельное название не принимается")
-    void shouldVisibleErrorCreateInvalidTitle(String title) throws SQLException {
+    void shouldVisibleErrorCreateInvalidTitle(String title) {
 
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.title(title));
 
-        CreateTaskPage page = submitInvalidAndCheckNothingSaved(request,1);
+        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
 
         uiStep.checkFieldError(page.form().titleError(), "Введите название задачи");
 
@@ -45,11 +42,11 @@ public class CreateTaskValidationUiTests extends UiTestBase {
     @NullAndEmptySource
     @ValueSource(strings = {" ", " "})
     @DisplayName("Пустой или пробельный исполнитель не принимается")
-    void shouldVisibleErrorCreateInvalidAssignee(String assignee) throws SQLException {
+    void shouldVisibleErrorCreateInvalidAssignee(String assignee) {
 
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.assignee(assignee));
 
-        CreateTaskPage page = submitInvalidAndCheckNothingSaved(request,1);
+        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
 
         uiStep.checkFieldError(page.form().assigneeError(), "Укажите исполнителя");
 
@@ -58,45 +55,38 @@ public class CreateTaskValidationUiTests extends UiTestBase {
     @Test
 
     @DisplayName("Форма без приоритета не принимается")
-    void shouldVisibleErrorCreateInvalidPriority() throws SQLException {
+    void shouldVisibleErrorCreateInvalidPriority() {
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.priority(null));
-        CreateTaskPage page = submitInvalidAndCheckNothingSaved(request,1);
+        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
         uiStep.checkFieldError(page.form().priorityError(), "Выберите приоритет");
 
     }
+
     @Test
     @DisplayName("Форма без статуса не принимается")
-    void shouldRejectMissingStatus() throws SQLException {
+    void shouldRejectMissingStatus() {
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.status(null));
-        CreateTaskPage page = submitInvalidAndCheckNothingSaved(request, 1);
+        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
         uiStep.checkFieldError(page.form().statusError(), "Выберите статус");
     }
+
     @Test
     @DisplayName("Пустая форма создания показывает ошибки у обязательных полей")
-    void shouldShowErrorsForEmptyForm() throws SQLException {
+    void shouldShowErrorsForEmptyForm() {
         var request = TaskDataFactory.customTaskRequestDTO(r -> {
             r.title(null);
             r.assignee(null);
             r.priority(null);
             r.status(null);
         });
-        CreateTaskPage page = submitInvalidAndCheckNothingSaved(request, 4);
+        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 4);
 
-        uiStep.checkFieldError(page.form().titleError(),"Введите название задачи");
-        uiStep.checkFieldError(page.form().assigneeError(),"Укажите исполнителя");
-        uiStep.checkFieldError(page.form().priorityError(),"Выберите приоритет");
+        uiStep.checkFieldError(page.form().titleError(), "Введите название задачи");
+        uiStep.checkFieldError(page.form().assigneeError(), "Укажите исполнителя");
+        uiStep.checkFieldError(page.form().priorityError(), "Выберите приоритет");
         uiStep.checkFieldError(page.form().statusError(), "Выберите статус");
     }
 
-    private CreateTaskPage submitInvalidAndCheckNothingSaved(CreateTaskRequest request, int expectedErrors) throws SQLException {
-        long before = dbSteps.getTasksCount();
 
-        CreateTaskPage page = uiStep.submitFormWithErrors(navStep.openCreateTaskPage(), request);
-
-        navStep.checkPageOpened(page,"Создание задачи", "/tasks");
-        uiStep.checkFormErrorsCount(page, expectedErrors);
-        dbSteps.checkTasksCount(before);
-        return page;
-    }
 
 }

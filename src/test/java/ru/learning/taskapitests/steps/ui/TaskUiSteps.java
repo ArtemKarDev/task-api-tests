@@ -93,12 +93,12 @@ public class TaskUiSteps {
 
     @Step("Проверить сообщение об ошибке: {expectedMessage}")
     public void checkFieldError(SelenideElement errorElement, String expectedMessage){
-        assertThat(errorElement.shouldHave(exactText(expectedMessage)));
+        errorElement.shouldHave(exactText(expectedMessage));
     }
 
     @Step("Проверить количество ошибок на форме: {expectedCount}")
     public void checkFormErrorsCount(CreateTaskPage page,int expectedCount){
-        assertThat(page.form().errors().shouldHave(size(expectedCount)));
+        page.form().errors().shouldHave(size(expectedCount));
     }
 
 }

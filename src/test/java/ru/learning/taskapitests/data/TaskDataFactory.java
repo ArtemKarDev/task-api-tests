@@ -2,10 +2,15 @@ package ru.learning.taskapitests.data;
 
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 
+import java.util.Random;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 public final class TaskDataFactory {
+    private static final Random random = new Random();
+    private static final String ALPHANUMERIC =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
     private TaskDataFactory() {
 
     }
@@ -91,6 +96,27 @@ public final class TaskDataFactory {
 
     public static String uniqueTitle(String prefix) {
         return prefix + " " + uniqueSuffix();
+    }
+
+    public static String stringOfLength(int length) {
+        if (length < 0) {
+            throw new IllegalArgumentException("Длина строки не может быть отрицательной: " + length);
+        }
+
+        StringBuilder stringBuilder = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int randomIndex = random.nextInt(ALPHANUMERIC.length());
+            stringBuilder.append(ALPHANUMERIC.charAt(randomIndex));
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String uniqueTitleOfLength(int length) {
+        if (length < 9) {
+            throw new IllegalArgumentException("Минимальная длина уникального названия 9, передано: " + length);
+        }
+
+        return uniqueSuffix() + "_" + stringOfLength(length - 9);
     }
 
 }
