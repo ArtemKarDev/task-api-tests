@@ -92,7 +92,8 @@ pipeline {
                 rm -f "/tmp/stand-${BUILD_NUMBER}.env" "/tmp/tests-source-${BUILD_NUMBER}.tar.gz"
             '''
             junit allowEmptyResults: true, testResults: 'surefire-reports/*.xml'
-            archiveArtifacts artifacts: 'stand-*.log, allure-results/**', allowEmptyArchive: true
+            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            archiveArtifacts artifacts: 'stand-*.log', allowEmptyArchive: true
         }
     }
 }
