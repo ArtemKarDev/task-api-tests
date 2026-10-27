@@ -3,16 +3,19 @@ pipeline {
 
     options {
         disableConcurrentBuilds()
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 40, unit: 'MINUTES')
     }
 
     parameters {
         choice(name: 'STAND', choices: ['stage', 'dev'], description: 'Стенд, против которого запускаются тесты')
-        choice(name: 'TESTS', choices: ['api | db', 'api', 'db', 'unit'], description: 'Теги JUnit (параметр -Dgroups)')
+        choice(name: 'TESTS', choices: ['api | db', 'ui', 'smoke', 'regression', 'api', 'db', 'unit'], description: 'Теги JUnit (параметр -Dgroups)')
+        choice(name: 'BROWSER', choices: ['chrome', 'firefox'], description: 'Браузер для UI-тестов (запускается в контейнере Selenium)')
     }
 
     environment {
         MAVEN_IMAGE = 'maven:3.9.16-eclipse-temurin-21'
+        CHROME_IMAGE = 'selenium/standalone-chrome:4.51.0-20261010'
+        FIREFOX_IMAGE = 'selenium/standalone-firefox:4.51.0-20261010'
     }
 
     stages {
@@ -21,6 +24,8 @@ pipeline {
                 script {
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${params.STAND}: ${params.TESTS}"
                     env.START_TS = sh(returnStdout: true, script: 'date -u +%Y-%m-%dT%H:%M:%SZ').trim()
+                    // Браузер нужен, если в выборке есть UI-тесты (ui, smoke, regression)
+                    env.NEED_BROWSER = (params.TESTS ==~ /.*(ui|smoke|regression).*/) ? 'true' : 'false'
                 }
             }
         }
@@ -41,6 +46,26 @@ pipeline {
             }
         }
 
+        stage('Start browser') {
+            when { expression { env.NEED_BROWSER == 'true' } }
+            steps {
+                sh '''
+                    set -eu
+                    set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
+
+                    if [ "$BROWSER" = "firefox" ]; then IMAGE="$FIREFOX_IMAGE"; else IMAGE="$CHROME_IMAGE"; fi
+                    echo "Запуск браузера из образа $IMAGE"
+
+                    docker run -d \
+                      --name "selenium-${BUILD_NUMBER}" \
+                      --network "${COMPOSE_PROJECT_NAME}_default" \
+                      --network-alias selenium \
+                      --shm-size=2g \
+                      "$IMAGE"
+                '''
+            }
+        }
+
         stage('Run tests') {
             steps {
                 sh '''
@@ -50,6 +75,11 @@ pipeline {
                     NETWORK="${COMPOSE_PROJECT_NAME}_default"
                     CONTAINER="stand-tests-${BUILD_NUMBER}"
                     ARCHIVE="/tmp/tests-source-${BUILD_NUMBER}.tar.gz"
+
+                    BROWSER_ARGS=""
+                    if [ "$NEED_BROWSER" = "true" ]; then
+                        BROWSER_ARGS="-e BROWSER=$BROWSER -e HEADLESS=true -e REMOTE_URL=http://selenium:4444/wd/hub"
+                    fi
 
                     tar czf "$ARCHIVE" --exclude=.git --exclude=target --exclude=allure-results --exclude=surefire-reports -C "$WORKSPACE" .
 
@@ -63,9 +93,10 @@ pipeline {
                       -e BASE_URL="http://app:8080" \
                       -e DB_URL="jdbc:postgresql://postgres:5432/${DB_NAME}" \
                       -e DB_USER -e DB_PASSWORD \
+                      $BROWSER_ARGS \
                       --entrypoint sh \
                       "$MAVEN_IMAGE" \
-                      -c 'tar xzf /tmp/tests-source.tar.gz -C /workspace && cd /workspace && mvn -B test "-Dgroups=$TEST_GROUPS"'
+                      -c 'tar xzf /tmp/tests-source.tar.gz -C /workspace && bash /workspace/jenkins/run-tests.sh'
 
                     docker cp "$ARCHIVE" "$CONTAINER:/tmp/tests-source.tar.gz"
                     docker start -a "$CONTAINER"
@@ -92,6 +123,7 @@ pipeline {
                         echo "Stand=${STAND}"
                         echo "Tests=${TESTS}"
                         echo "Base_URL=http://app:8080"
+                        if [ "$NEED_BROWSER" = "true" ]; then echo "Browser=${BROWSER}"; else echo "Browser=not_used"; fi
                         echo "App_image_id=$(docker inspect -f '{{.Image}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null | cut -c8-19)"
                         echo "App_started=$(docker inspect -f '{{.State.StartedAt}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null)"
                         echo "Tests_commit=$(git -C "$WORKSPACE" rev-parse --short HEAD 2>/dev/null || echo unknown)"
@@ -99,7 +131,7 @@ pipeline {
                     } > allure-results/environment.properties
                 fi
 
-                docker rm -f "$CONTAINER" 2>/dev/null || true
+                docker rm -f "$CONTAINER" "selenium-${BUILD_NUMBER}" 2>/dev/null || true
                 rm -f "/tmp/stand-${BUILD_NUMBER}.env" "/tmp/tests-source-${BUILD_NUMBER}.tar.gz"
             '''
             junit allowEmptyResults: true, testResults: 'surefire-reports/*.xml'
