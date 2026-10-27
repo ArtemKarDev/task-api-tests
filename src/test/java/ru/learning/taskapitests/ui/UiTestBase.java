@@ -35,6 +35,8 @@ public class UiTestBase extends TestBase {
         Configuration.screenshots = false;
         Configuration.savePageSource = false;
 
+        Configuration.fastSetValue = true;
+
         String remoteUrl = TestConfig.getRemoteUrl();
         if (remoteUrl != null) {
             Configuration.remote = remoteUrl;

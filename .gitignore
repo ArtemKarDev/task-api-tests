@@ -37,4 +37,16 @@ build/
 ### Mac OS ###
 .DS_Store
 
+# Секреты и локальные настройки
+.env
+*.env
+!*.env.example
+
+# Логи и результаты запусков
+*.log
 .allure
+allure-results/
+allure-report/
+
+# Windows
+Thumbs.db
