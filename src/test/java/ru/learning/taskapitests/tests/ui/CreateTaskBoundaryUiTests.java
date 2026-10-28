@@ -59,9 +59,9 @@ public class CreateTaskBoundaryUiTests extends UiTestBase {
                                 r -> r.title(TaskDataFactory.uniqueTitleOfLength(256))),
                         TaskForm::titleError,
                         "Название не должно превышать 255 символов"),
-                tooLongCase("исполнитель 31 символ",
+                tooLongCase("исполнитель 101 символ",
                         TaskDataFactory.customTaskRequestDTO(
-                                r -> r.assignee(TaskDataFactory.stringOfLength(31))),
+                                r -> r.assignee(TaskDataFactory.stringOfLength(101))),
                         TaskForm::assigneeError,
                         "Имя исполнителя не должно превышать 30 символов"),
                 tooLongCase("описание 5001 символ",
