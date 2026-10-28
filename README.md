@@ -14,3 +14,4 @@ mvn test "-Dgroups=ui" "-Dheadless=true"
 mvn test "-Dgroups=api"
 mvn test "-Dgroups=smoke"
 mvn test "-Dgroups=api & smoke"
+
