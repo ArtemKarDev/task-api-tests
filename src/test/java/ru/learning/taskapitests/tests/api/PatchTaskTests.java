@@ -9,6 +9,7 @@ import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 @Tag(Tags.REGRESSION)
 @Tag(Tags.API)
 @DisplayName("Запросы частичного обновления задач")
@@ -45,13 +46,9 @@ public class PatchTaskTests extends TestBase {
     @Test
     @Tag(Tags.NEGATIVE)
     void shouldReturn404WhenNonexistentTask() {
-
         long taskId = Long.MAX_VALUE;
-
         Response patchResponse = taskApi.patchTask(taskId, TaskDataFactory.validPatchPriorityRequestBody());
-        step.checkStatus(patchResponse,404);
-        step.checkErrorMessage(patchResponse,"Task not found with id: " + taskId);
-
+        step.checkApiError(patchResponse, 404, "Task not found with id: " + taskId, "/api/tasks/" + taskId);
     }
 
     @Test

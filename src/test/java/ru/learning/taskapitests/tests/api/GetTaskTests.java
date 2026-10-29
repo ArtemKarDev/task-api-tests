@@ -15,11 +15,8 @@ public class GetTaskTests extends TestBase {
     @Tag(Tags.NEGATIVE)
     public void shouldReturn404WhenTaskDoesNotExist() {
         long nonexistentId = Long.MAX_VALUE;
-
         Response response = step.getTask(nonexistentId);
-        step.checkStatus(response, 404);
-        step.checkErrorMessage(response,"Task not found with id: " + nonexistentId);
-
+        step.checkApiError(response,404, "Task not found with id: " + nonexistentId, "/api/tasks/" + nonexistentId);
     }
 
 }

@@ -40,7 +40,7 @@ public class CreateTaskTests extends TestBase {
     @Test
     void shouldReturn400WhenTitleIsMissing() {
         Response response = step.createTask(TaskDataFactory.invalidCreateTaskRequestWithoutTitle());
-        step.checkStatus(response, 400);
+        step.checkValidationError(response, "/api/tasks", "title: must not be blank");
     }
 
     @Tag(Tags.NEGATIVE)
@@ -48,7 +48,8 @@ public class CreateTaskTests extends TestBase {
     @DisplayName("Запрос создания задачи с некорректным приоритетом")
     void shouldReturn400WhenPriorityIsInvalid() {
         Response response = taskApi.createTask(TaskDataFactory.invalidCreateTaskRequestInvalidPriority());
-        step.checkStatus(response, 400);
+        step.checkApiError(response, 400,
+                "Request body is missing, malformed or contains an invalid value", "/api/tasks");
     }
 
 }

@@ -3,13 +3,17 @@ package ru.learning.taskapitests.steps;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import ru.learning.taskapitests.client.TaskApiClient;
+import ru.learning.taskapitests.generated.model.ApiErrorResponse;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,8 +21,16 @@ public class TaskSteps {
 
     private final TaskApiClient taskApi;
     private final List<Long> createdTaskIds = new ArrayList<>();
-
     public static final Logger log = LoggerFactory.getLogger(TaskSteps.class);
+
+    public static final Map<Integer, String> REASON_PHRASES = Map.of(
+            400, "Bad Request",
+            404, "Not Found",
+            405, "Method Not Allowed",
+            409, "Conflict",
+            415, "Unsupported Media Type",
+            500, "Internal Server Error");
+
 
     public TaskSteps(TaskApiClient taskApi) {
         this.taskApi = taskApi;
@@ -56,10 +68,6 @@ public class TaskSteps {
         return registerForCleanup(taskApi.createTaskDto(request));
     }
 
-//    @Step("Создать задачу, ожидая ошибку")
-//    public ApiErrorResponse createTaskExpectingError(){
-//
-//    }
 
     @Step("Проверить данные задачи")
     public void checkTaskData(Response response,
@@ -128,6 +136,45 @@ public class TaskSteps {
                 .as("Сообщение об ошибке")
                 .isEqualTo(expectedMessage);
     }
+
+    @Step("Проверить ответ-ошибку: {expectedStatus}, сообщение «{expectedMessage}»")
+    public ApiErrorResponse checkApiError(Response response, int expectedStatus,
+                                          String expectedMessage, String expectedPath) {
+        ApiErrorResponse error = checkErrorEnvelope(response, expectedStatus, expectedMessage, expectedPath);
+        assertThat(error.getDetails()).as("Ошибки по полям (должен быть пустой список)").isEmpty();
+        return error;
+    }
+
+    @Step("Проверить ошибки валидации по полям")
+    public ApiErrorResponse checkValidationError(Response response, String expectedPath,
+                                                 String... expectedDetails) {
+        ApiErrorResponse error = checkErrorEnvelope(response, 400, "Validation failed", expectedPath);
+        assertThat(error.getDetails())
+                .as("Ошибки по полям")
+                .extracting(detail -> detail.getField() + ": " + detail.getMessage())
+                .containsExactlyInAnyOrder(expectedDetails);
+        return error;
+    }
+
+    private ApiErrorResponse checkErrorEnvelope(Response response, int expectedStatus,
+                                                String expectedMessage, String expectedPath) {
+        checkStatus(response, expectedStatus);
+        ApiErrorResponse error = response.as(ApiErrorResponse.class);
+
+        assertThat(error.getStatus()).as("Поле status").isEqualTo(expectedStatus);
+        assertThat(error.getError()).as("Поле error").isEqualTo(REASON_PHRASES.get(expectedStatus));
+        assertThat(error.getMessage()).as("Поле message").isEqualTo(expectedMessage);
+        assertThat(error.getPath()).as("Поле path").isEqualTo(expectedPath);
+
+        Instant timestamp = Instant.parse(error.getTimestamp());
+        assertThat(timestamp)
+                .as("Поле timestamp (время ошибки, UTC)")
+                .isBetween(Instant.now().minus(Duration.ofMinutes(10)),
+                        Instant.now().plus(Duration.ofMinutes(10)));
+        return error;
+    }
+
+
 
     public void clearTaskIdInCreatedList() {
         createdTaskIds.clear();

@@ -24,8 +24,8 @@ public class DeleteTaskTest extends TestBase {
         step.checkStatus(response, 204);
 
         Response getResponse = step.getTask(taskId);
-        step.checkStatus(getResponse, 404);
-        step.checkErrorMessage(getResponse, "Task not found with id: " + taskId);
+        step.checkApiError(getResponse,404, "Task not found with id: " + taskId, "/api/tasks/" + taskId);
+
     }
 
     @Test
@@ -34,8 +34,8 @@ public class DeleteTaskTest extends TestBase {
 
         long taskId = Long.MAX_VALUE;
         Response response = taskApi.deleteTask(taskId);
-        step.checkStatus(response, 404);
-        step.checkErrorMessage(response, "Task not found with id: " + taskId);
+        step.checkApiError(response,404, "Task not found with id: " + taskId, "/api/tasks/" + taskId);
+
 
     }
 
