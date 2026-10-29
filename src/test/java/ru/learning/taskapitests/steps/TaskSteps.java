@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -149,12 +150,33 @@ public class TaskSteps {
     @Step("Проверить ошибки валидации по полям")
     public ApiErrorResponse checkValidationError(Response response, String expectedPath,
                                                  String... expectedDetails) {
-        ApiErrorResponse error = checkErrorEnvelope(response, 400, "Validation failed", expectedPath);
+        return checkApiErrorWithDetails(response, 400, "Validation failed", expectedPath, expectedDetails);
+    }
+
+    @Step("Проверить ответ-ошибку {expectedStatus} с описанием по полям")
+    public ApiErrorResponse checkApiErrorWithDetails(Response response, int expectedStatus,
+                                                     String expectedMessage, String expectedPath,
+                                                     String... expectedDetails) {
+        ApiErrorResponse error = checkErrorEnvelope(response, expectedStatus, expectedMessage, expectedPath);
         assertThat(error.getDetails())
                 .as("Ошибки по полям")
                 .extracting(detail -> detail.getField() + ": " + detail.getMessage())
                 .containsExactlyInAnyOrder(expectedDetails);
         return error;
+    }
+
+    @Step("Отправить запрос {method} {path}")
+    public Response sendRequest(String method, String path, String contentType, String body) {
+        return taskApi.sendRaw(method, path, contentType, body);
+    }
+
+    @Step("Проверить заголовок {header}: содержит {expectedValues}")
+    public void checkHeaderContains(Response response, String header, List<String> expectedValues) {
+        String actual = response.getHeader(header);
+        assertThat(actual).as("Заголовок " + header).isNotNull();
+        assertThat(Arrays.asList(actual.split("\\s*,\\s*")))
+                .as("Значения заголовка " + header)
+                .containsAll(expectedValues);
     }
 
     private ApiErrorResponse checkErrorEnvelope(Response response, int expectedStatus,

@@ -48,7 +48,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
         CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
 
         uiStep.checkFieldError(page.form().assigneeError(), "Укажите исполнителя");
-        step.checkC
+
     }
 
     @Test

@@ -2,6 +2,7 @@ package ru.learning.taskapitests.client;
 
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
@@ -131,6 +132,24 @@ public class TaskApiClient {
         return response;
     }
 
+    @Step("Выполнить запрос {method} {path}")
+    public Response sendRaw(String method, String path, String contentType, String body) {
+        if (body != null) {
+            AllureAttachments.attachRequest(body);
+        }
+
+        RequestSpecification request = given().spec(ApiSpec.requestSpec());
+        if (contentType != null) {
+            request.contentType(contentType);
+        }
+        if (body != null) {
+            request.body(body);
+        }
+
+        Response response = request.when().request(method, path);
+        attachResponseDetails(response);
+        return response;
+    }
 
 }
 
