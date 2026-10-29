@@ -115,8 +115,18 @@ public final class TaskDataFactory {
         if (length < 9) {
             throw new IllegalArgumentException("Минимальная длина уникального названия 9, передано: " + length);
         }
-
         return uniqueSuffix() + "_" + stringOfLength(length - 9);
+    }
+
+    public static CreateTaskRequest requestWithFieldLength(String field, int length) {
+        return customTaskRequestDTO(request -> {
+            switch (field){
+                case "title" -> request.title(uniqueTitleOfLength(length));
+                case "assignee" -> request.assignee(stringOfLength(length));
+                case "description" -> request.description(stringOfLength(length));
+                default -> throw new IllegalArgumentException("Неизвестное поле: " + field);
+            }
+        });
     }
 
 }

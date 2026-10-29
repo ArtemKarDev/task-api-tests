@@ -8,7 +8,7 @@ import java.sql.SQLException;
 public class TaskRepository {
     public TaskDbRecord findById(long taskId) throws SQLException {
         String sql = """
-                SELECT id, title, description, status , priority
+                SELECT id, title, description, status , priority , assignee
                 FROM tasks
                 WHERE id = ?                
                 """;
@@ -27,7 +27,8 @@ public class TaskRepository {
                         resultSet.getString("title"),
                         resultSet.getString("description"),
                         resultSet.getString("status"),
-                        resultSet.getString("priority")
+                        resultSet.getString("priority"),
+                        resultSet.getString("assignee")
                 );
             }
         }

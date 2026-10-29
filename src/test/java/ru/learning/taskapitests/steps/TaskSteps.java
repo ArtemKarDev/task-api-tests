@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TaskSteps {
@@ -174,8 +175,6 @@ public class TaskSteps {
         return error;
     }
 
-
-
     public void clearTaskIdInCreatedList() {
         createdTaskIds.clear();
     }
@@ -206,6 +205,13 @@ public class TaskSteps {
             registerTaskForCleanup(response.jsonPath().getLong("id"));
         }
         return response;
+    }
+
+    @Step("Проверить, что поле «{field}» в ответе равно null")
+    public void checkJsonFieldIsNull(Response response,String field){
+        assertThat(response.jsonPath().<Object>get(field))
+                .as("Поле " + field + " в ответе")
+                .isNull();
     }
 
 

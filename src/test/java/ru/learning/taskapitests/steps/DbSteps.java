@@ -44,5 +44,15 @@ public class DbSteps {
         assertThat(record).as("Запись в БД").isNotNull();
         assertThat(record.title()).as("Название в БД").isEqualTo(expected.getTitle());
         assertThat(record.description()).as("Описание в БД").isEqualTo(expected.getDescription());
+        assertThat(record.assignee()).as("Исполнитель в БД").isEqualTo(expected.getAssignee());
+    }
+
+    @Step("Проверить необязательные поля задачи {taskId} в БД")
+    public void checkOptionalFields(long taskId, String expectedDescription, String expectedAssignee){
+        TaskDbRecord dbTask = getTaskFromDb(taskId);
+        assertThat(dbTask).as("Запись в БД").isNotNull();
+        assertThat(dbTask.description()).as("Описание в БД").isEqualTo(expectedDescription);
+        assertThat(dbTask.assignee()).as("Исполнитель в БД").isEqualTo(expectedAssignee);
+        
     }
 }

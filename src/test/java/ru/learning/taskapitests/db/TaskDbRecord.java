@@ -5,6 +5,7 @@ public record TaskDbRecord(
         String title,
         String description,
         String status,
-        String priority
+        String priority,
+        String assignee
 ) {
 }

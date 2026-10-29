@@ -40,7 +40,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
     @ParameterizedTest(name = "исполнитель: [{0}]")
     @NullAndEmptySource
     @ValueSource(strings = {" ", " "})
-    @DisplayName("Пустой или пробельный исполнитель не принимается")
+    @DisplayName("Пустой или пробельный исполнитель принимается")
     void shouldVisibleErrorCreateInvalidAssignee(String assignee) {
 
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.assignee(assignee));
@@ -48,7 +48,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
         CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
 
         uiStep.checkFieldError(page.form().assigneeError(), "Укажите исполнителя");
-
+        step.checkC
     }
 
     @Test
