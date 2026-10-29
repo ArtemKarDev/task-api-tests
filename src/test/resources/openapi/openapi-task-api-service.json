@@ -1,1 +1,485 @@
-{"openapi":"3.1.0","info":{"title":"Task API","description":"REST API for managing tasks.\nSupports creating, retrieving, updating\nand deleting tasks.\n","version":"1.0.0"},"servers":[{"url":"http://localhost:8080","description":"Generated server url"}],"tags":[{"name":"Tasks","description":"API for managing tasks"}],"paths":{"/api/tasks/{id}":{"get":{"tags":["Tasks"],"summary":"Get a task by ID","description":"Returns a task with the specified ID","operationId":"getTaskById","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"404":{"description":"Task not found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ApiErrorResponse"},"example":{"error":"Task not found with id: 123"}}}},"200":{"description":"Task found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/Task"}}}}}},"put":{"tags":["Tasks"],"operationId":"updateTask","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateTaskRequest"}}},"required":true},"responses":{"404":{"description":"Not Found","content":{"*/*":{"schema":{"type":"object","additionalProperties":{"type":"string"}}}}},"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/Task"}}}}}},"delete":{"tags":["Tasks"],"operationId":"deleteTask","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"responses":{"404":{"description":"Not Found","content":{"*/*":{"schema":{"type":"object","additionalProperties":{"type":"string"}}}}},"200":{"description":"OK"}}},"patch":{"tags":["Tasks"],"operationId":"patchTask","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"integer","format":"int64"}}],"requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/PatchTaskRequest"}}},"required":true},"responses":{"404":{"description":"Not Found","content":{"*/*":{"schema":{"type":"object","additionalProperties":{"type":"string"}}}}},"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/Task"}}}}}}},"/api/tasks":{"get":{"tags":["Tasks"],"operationId":"getAllTask","responses":{"404":{"description":"Not Found","content":{"*/*":{"schema":{"type":"object","additionalProperties":{"type":"string"}}}}},"200":{"description":"OK","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/Task"}}}}}}},"post":{"tags":["Tasks"],"summary":"Create a task","description":"Creates a new task and returns the created task","operationId":"createTask","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateTaskRequest"}}},"required":true},"responses":{"404":{"description":"Not Found","content":{"*/*":{"schema":{"type":"object","additionalProperties":{"type":"string"}}}}},"201":{"description":"Task successfully created","content":{"*/*":{"schema":{"$ref":"#/components/schemas/Task"}}}},"400":{"description":"Request validation failed","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ValidationErrorResponse"}}}}}}}},"components":{"schemas":{"CreateTaskRequest":{"type":"object","properties":{"title":{"type":"string","maxLength":255,"minLength":0},"description":{"type":"string","maxLength":5000,"minLength":0},"status":{"type":"string","description":"Task status","enum":["NEW","IN_PROGRESS","DONE"],"example":"NEW"},"priority":{"type":"string","description":"Task priority","enum":["LOW","MEDIUM","HIGH"],"example":"HIGH"},"assignee":{"type":"string","maxLength":100,"minLength":0}},"required":["priority","status","title"]},"Task":{"type":"object","properties":{"id":{"type":"integer","format":"int64"},"title":{"type":"string"},"description":{"type":"string"},"status":{"type":"string","enum":["NEW","IN_PROGRESS","DONE"]},"priority":{"type":"string","enum":["LOW","MEDIUM","HIGH"]},"assignee":{"type":"string"},"createdAt":{"type":"string","example":"2026-10-22T15:13:05.04423"},"updatedAt":{"type":"string","example":"2026-10-22T15:13:05.04423"}}},"ValidationErrorResponse":{"type":"object","properties":{"errors":{"type":"object","additionalProperties":{"type":"string"},"description":"Validation errors grouped by request field","example":{"title":"Title must not be blank","status":"Status must be NEW, IN_PROGRESS or DONE"}}}},"PatchTaskRequest":{"type":"object","properties":{"title":{"type":"string","maxLength":255,"minLength":0},"description":{"type":"string","maxLength":5000,"minLength":0},"status":{"type":"string","enum":["NEW","IN_PROGRESS","DONE"]},"priority":{"type":"string","enum":["LOW","MEDIUM","HIGH"]},"assignee":{"type":"string","maxLength":100,"minLength":0},"empty":{"type":"boolean"}}},"ApiErrorResponse":{"type":"object","properties":{"error":{"type":"string"}}}}}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Task API",
+    "description": "REST API for managing tasks.\nSupports creating, retrieving, updating\nand deleting tasks.\n",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tasks",
+      "description": "API for managing tasks"
+    }
+  ],
+  "paths": {
+    "/api/tasks/{id}": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Get a task by ID",
+        "description": "Returns a task with the specified ID",
+        "operationId": "getTaskById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID is not a valid number",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Replace a task",
+        "description": "Replaces all fields of the task. Optional fields that are omitted or blank become empty",
+        "operationId": "updateTask",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed or body is malformed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Delete a task",
+        "description": "Deletes the task with the specified ID",
+        "operationId": "deleteTask",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Task deleted"
+          },
+          "400": {
+            "description": "ID is not a valid number",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Partially update a task",
+        "description": "Changes only the provided fields. A missing or null field is left unchanged; a field cannot be cleared with PATCH (use PUT). At least one field is required",
+        "operationId": "patchTask",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed, body is malformed or empty",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Get all tasks",
+        "description": "Returns all tasks",
+        "operationId": "getAllTask",
+        "responses": {
+          "200": {
+            "description": "List of tasks",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Create a task",
+        "description": "Creates a new task and returns the created task",
+        "operationId": "createTask",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Task successfully created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed or body is malformed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
+          },
+          "status": {
+            "type": "string",
+            "description": "Task status",
+            "enum": [
+              "NEW",
+              "IN_PROGRESS",
+              "DONE"
+            ],
+            "example": "NEW"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Task priority",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "example": "HIGH"
+          },
+          "assignee": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "priority",
+          "status",
+          "title"
+        ]
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "description": "Единый формат ошибки API",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "description": "Время ошибки (UTC)",
+            "example": "2026-10-28T19:21:00.123Z"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          },
+          "message": {
+            "type": "string",
+            "example": "Validation failed"
+          },
+          "details": {
+            "type": "array",
+            "description": "Ошибки по полям. Пустой список, если ошибка не связана с полями",
+            "items": {
+              "$ref": "#/components/schemas/FieldErrorDetail"
+            }
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/tasks"
+          }
+        }
+      },
+      "FieldErrorDetail": {
+        "type": "object",
+        "description": "Ошибка по конкретному полю запроса",
+        "properties": {
+          "field": {
+            "type": "string",
+            "example": "title"
+          },
+          "message": {
+            "type": "string",
+            "example": "must not be blank"
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "IN_PROGRESS",
+              "DONE"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ]
+          },
+          "assignee": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-22T15:13:05.04423"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-10-22T15:13:05.04423"
+          }
+        }
+      },
+      "PatchTaskRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0,
+            "pattern": "(?s).*\\S.*"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0,
+            "pattern": "(?s).*\\S.*"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "IN_PROGRESS",
+              "DONE"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ]
+          },
+          "assignee": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "(?s).*\\S.*"
+          }
+        }
+      }
+    }
+  }
+}
