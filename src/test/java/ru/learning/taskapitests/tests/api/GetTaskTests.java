@@ -18,7 +18,7 @@ public class GetTaskTests extends TestBase {
 
         Response response = step.getTask(nonexistentId);
         step.checkStatus(response, 404);
-        step.checkErrorText(response,"Task not found with id: " + nonexistentId);
+        step.checkErrorMessage(response,"Task not found with id: " + nonexistentId);
 
     }
 

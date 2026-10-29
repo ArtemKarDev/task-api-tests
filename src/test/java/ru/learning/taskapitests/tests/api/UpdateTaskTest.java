@@ -42,7 +42,7 @@ public class UpdateTaskTest extends TestBase {
         Response updateResponse = taskApi.updateTask(taskId, TaskDataFactory.validUpdateRequestBody());
 
         step.checkStatus(updateResponse, 404);
-        step.checkErrorText(updateResponse,"Task not found with id: " + taskId);
+        step.checkErrorMessage(updateResponse,"Task not found with id: " + taskId);
     }
 
 }

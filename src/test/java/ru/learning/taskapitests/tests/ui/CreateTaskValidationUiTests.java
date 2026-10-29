@@ -11,7 +11,6 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.data.TaskDataFactory;
-import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.ui.UiTestBase;
 import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 
@@ -86,7 +85,6 @@ public class CreateTaskValidationUiTests extends UiTestBase {
         uiStep.checkFieldError(page.form().priorityError(), "Выберите приоритет");
         uiStep.checkFieldError(page.form().statusError(), "Выберите статус");
     }
-
 
 
 }

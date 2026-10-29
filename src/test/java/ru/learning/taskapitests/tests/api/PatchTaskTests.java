@@ -49,11 +49,9 @@ public class PatchTaskTests extends TestBase {
         long taskId = Long.MAX_VALUE;
 
         Response patchResponse = taskApi.patchTask(taskId, TaskDataFactory.validPatchPriorityRequestBody());
-        patchResponse.then().statusCode(404);
+        step.checkStatus(patchResponse,404);
+        step.checkErrorMessage(patchResponse,"Task not found with id: " + taskId);
 
-        assertThat(patchResponse.jsonPath().getString("error"))
-                .as("Текст ошибки")
-                .isEqualTo("Task not found with id: " + taskId);
     }
 
     @Test

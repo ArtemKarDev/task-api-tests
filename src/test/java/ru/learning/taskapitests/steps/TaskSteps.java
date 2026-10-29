@@ -10,9 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -126,9 +123,10 @@ public class TaskSteps {
     }
 
     @Step("Проверить текст ошибки {expectedError}")
-    public void checkErrorText(Response response, String expectedError) {
-        assertThat(response.jsonPath().getString("error"))
-                .as("текст ответа c ошибкой ").isEqualTo(expectedError);
+    public void checkErrorMessage(Response response, String expectedMessage) {
+        assertThat(response.jsonPath().getString("message"))
+                .as("Сообщение об ошибке")
+                .isEqualTo(expectedMessage);
     }
 
     public void clearTaskIdInCreatedList() {
