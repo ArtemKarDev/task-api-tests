@@ -69,9 +69,23 @@ public class TestConfig {
         return isBlank(value) ? null : value;
     }
 
-    /**
-     * Текстовое описание текущей конфигурации (без пароля) для логов и отчёта.
-     */
+    public static String getKafkaBootstrapServers() {
+        return require("kafka.bootstrap.servers");
+    }
+
+    public static String getKafkaTopicIn() {
+        return require("kafka.topic.in");
+    }
+
+    public static String getKafkaTopicInDlq() {
+        return require("kafka.topic.in.dlq");
+    }
+
+    public static String getKafkaTopicOut() {
+        return require("kafka.topic.out");
+    }
+
+    /** Текстовое описание текущей конфигурации (без пароля) для логов и отчёта. */
     public static String describe() {
         String remote = getRemoteUrl();
         return """
@@ -79,10 +93,11 @@ public class TestConfig {
                 base.url: %s
                 db.url: %s
                 db.user: %s
+                kafka: %s
                 browser: %s (headless=%s, size=%s)
                 remote.url: %s
                 """.formatted(
-                ENV, getBaseUrl(), getDbUrl(), getDbUser(),
+                ENV, getBaseUrl(), getDbUrl(), getDbUser(), getKafkaBootstrapServers(),
                 getBrowser(), isHeadless(), getBrowserSize(),
                 remote == null ? "(не задан, браузер запускается локально)" : remote);
     }

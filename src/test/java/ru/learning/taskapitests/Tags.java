@@ -10,6 +10,7 @@ public class Tags {
     public static final String NEGATIVE = "negative";
     /** Тесты, которым не нужен запущенный стенд (например, проверка конфигурации). */
     public static final String UNIT = "unit";
+    public static final String KAFKA = "kafka";
 
     private Tags(){
 
