@@ -87,6 +87,35 @@ public class KafkaSteps implements AutoCloseable {
         assertThat(LocalDateTime.parse(task.updatedAt())).as("task.updatedAt").isNotNull();
     }
 
+    @Step("Проверить порядок событий задачи {taskId}")
+    public void checkEventOrder(TopicListener listener, long taskId, String... expectedTypes) {
+        List<String> actual = listener.messages().stream()
+                .filter(message -> String.valueOf(taskId).equals(message.key()))
+                .map(message -> eventTypeOf(message.value()))
+                .toList();
+
+        assertThat(actual)
+                .as("Типы событий задачи " + taskId + " в порядке появления в топике")
+                .containsExactly(expectedTypes);
+    }
+
+    @Step("Проверить, что за {waitTime} в топике не появилось сообщений со строкой «{text}»")
+    public void checkNoMessagesContaining(TopicListener listener, String text, Duration waitTime) {
+        List<TopicListener.Message> messages = listener.collectFor(waitTime);
+
+        assertThat(messages)
+                .as("Сообщения, содержащие «" + text + "»")
+                .noneMatch(message -> message.value() != null && message.value().contains(text));
+    }
+
+    private String eventTypeOf(String value) {
+        try {
+            return MAPPER.readTree(value).path("eventType").asText();
+        } catch (JsonProcessingException e) {
+            return "НЕ JSON";
+        }
+    }
+
     @Override
     public void close() {
         for (AutoCloseable resource : resources) {

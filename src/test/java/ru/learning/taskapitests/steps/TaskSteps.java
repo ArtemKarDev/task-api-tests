@@ -48,6 +48,17 @@ public class TaskSteps {
         return taskApi.deleteTask(taskId);
     }
 
+    @Step("Заменить задачу {taskId} целиком")
+    public Response updateTask(long taskId, String requestBody) {
+        return taskApi.updateTask(taskId, requestBody);
+    }
+
+    @Step("Изменить задачу {taskId} частично")
+    public Response patchTask(long taskId, String requestBody) {
+        return taskApi.patchTask(taskId, requestBody);
+    }
+
+
     @Step("Проверить HTTP-статус: {expectedStatus}")
     public void checkStatus(Response response, int expectedStatus) {
         assertThat(response.statusCode())
