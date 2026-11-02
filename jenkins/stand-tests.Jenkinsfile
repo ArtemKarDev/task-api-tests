@@ -8,7 +8,7 @@ pipeline {
 
     parameters {
         choice(name: 'STAND', choices: ['stage', 'dev'], description: 'Стенд, против которого запускаются тесты')
-        choice(name: 'TESTS', choices: ['api | db', 'ui', 'smoke', 'regression', 'api', 'db', 'unit'], description: 'Теги JUnit (параметр -Dgroups)')
+        choice(name: 'TESTS', choices: ['api | db', 'api | db | kafka', 'kafka', 'ui', 'smoke', 'regression', 'api', 'db', 'unit'], description: 'Теги JUnit (параметр -Dgroups)')
         choice(name: 'BROWSER', choices: ['chrome', 'firefox'], description: 'Браузер для UI-тестов (запускается в контейнере Selenium)')
     }
 
@@ -38,9 +38,13 @@ pipeline {
                         tr -d '\\r' < "$ENV_FILE" > "/tmp/stand-${BUILD_NUMBER}.env"
                         set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
 
-                        STATE=$(docker inspect -f '{{.State.Health.Status}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null || echo missing)
-                        echo "Состояние приложения стенда ${STAND}: $STATE"
-                        [ "$STATE" = "healthy" ] || { echo "Стенд не готов: запустите задание stand-deploy (STAND=${STAND}, ACTION=up)"; exit 1; }
+                        APP_STATE=$(docker inspect -f '{{.State.Health.Status}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null || echo missing)
+                        KAFKA_STATE=$(docker inspect -f '{{.State.Health.Status}}' "${COMPOSE_PROJECT_NAME}-kafka-1" 2>/dev/null || echo missing)
+                        echo "Стенд ${STAND}: приложение $APP_STATE, Kafka $KAFKA_STATE"
+                        if [ "$APP_STATE" != "healthy" ] || [ "$KAFKA_STATE" != "healthy" ]; then
+                            echo "Стенд не готов: запустите задание stand-deploy (STAND=${STAND}, ACTION=up)"
+                            exit 1
+                        fi
                     '''
                 }
             }
@@ -92,6 +96,7 @@ pipeline {
                       -e TEST_GROUPS="$TESTS" \
                       -e BASE_URL="http://task-app:8080" \
                       -e DB_URL="jdbc:postgresql://postgres:5432/${DB_NAME}" \
+                      -e KAFKA_BOOTSTRAP_SERVERS="kafka:29092" \
                       -e DB_USER -e DB_PASSWORD \
                       $BROWSER_ARGS \
                       --entrypoint sh \
@@ -118,11 +123,13 @@ pipeline {
                     set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
                     docker logs --since "$START_TS" "${COMPOSE_PROJECT_NAME}-app-1" > stand-app.log 2>&1 || true
                     docker logs --since "$START_TS" "${COMPOSE_PROJECT_NAME}-postgres-1" > stand-postgres.log 2>&1 || true
+                    docker logs --since "$START_TS" "${COMPOSE_PROJECT_NAME}-kafka-1" > stand-kafka.log 2>&1 || true
 
                     {
                         echo "Stand=${STAND}"
                         echo "Tests=${TESTS}"
                         echo "Base_URL=http://task-app:8080"
+                        echo "Kafka=kafka:29092"
                         if [ "$NEED_BROWSER" = "true" ]; then echo "Browser=${BROWSER}"; else echo "Browser=not_used"; fi
                         echo "App_image_id=$(docker inspect -f '{{.Image}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null | cut -c8-19)"
                         echo "App_started=$(docker inspect -f '{{.State.StartedAt}}' "${COMPOSE_PROJECT_NAME}-app-1" 2>/dev/null)"

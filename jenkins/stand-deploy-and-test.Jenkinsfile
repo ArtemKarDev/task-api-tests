@@ -13,7 +13,7 @@ pipeline {
                      description: 'При деплое удалить ВСЕ данные стенда. Только dev, для stage запрещено')
         booleanParam(name: 'BACKUP', defaultValue: false,
                      description: 'Только с RESET_DATA: сохранить дамп БД перед удалением')
-        choice(name: 'TESTS', choices: ['api | db', 'ui', 'smoke', 'regression', 'api', 'db', 'unit'],
+        choice(name: 'TESTS', choices: ['api | db', 'api | db | kafka', 'kafka', 'ui', 'smoke', 'regression', 'api', 'db', 'unit'],
                description: 'Теги JUnit (параметр -Dgroups)')
         choice(name: 'BROWSER', choices: ['chrome', 'firefox'], description: 'Браузер для UI-тестов')
     }
