@@ -6,6 +6,7 @@ import ru.learning.taskapitests.db.TaskRepository;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,5 +55,38 @@ public class DbSteps {
         assertThat(dbTask.description()).as("Описание в БД").isEqualTo(expectedDescription);
         assertThat(dbTask.assignee()).as("Исполнитель в БД").isEqualTo(expectedAssignee);
         
+    }
+
+    @Step("Проверить, что в БД задач с названием «{title}»: {expected}")
+    public void checkTasksCountByTitle(String title, long expected) {
+        try {
+            assertThat(taskRepository.countByTitle(title))
+                    .as("Количество задач с названием «" + title + "» в БД")
+                    .isEqualTo(expected);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Не удалось посчитать задачи с названием " + title, e);
+        }
+    }
+
+    @Step("Проверить, что сообщение {messageId} учтено как обработанное и привело к задаче {taskId}")
+    public void checkMessageProcessed(UUID messageId, long taskId) {
+        try {
+            assertThat(taskRepository.findTaskIdByMessage(messageId))
+                    .as("Задача, привязанная к сообщению " + messageId + " в processed_messages")
+                    .isEqualTo(taskId);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Не удалось прочитать processed_messages", e);
+        }
+    }
+
+    @Step("Проверить, что записей об обработке сообщения {messageId}: {expected}")
+    public void checkProcessedCount(UUID messageId, long expected) {
+        try {
+            assertThat(taskRepository.countProcessedMessages(messageId))
+                    .as("Записей в processed_messages для сообщения " + messageId)
+                    .isEqualTo(expected);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Не удалось прочитать processed_messages", e);
+        }
     }
 }

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class TaskRepository {
     public TaskDbRecord findById(long taskId) throws SQLException {
@@ -42,6 +43,49 @@ public class TaskRepository {
              ResultSet resultSet = statement.executeQuery()) {
             resultSet.next();
             return resultSet.getLong(1);
+        }
+    }
+
+    public long countByTitle(String title) throws SQLException {
+        String sql = "SELECT count(*) FROM tasks WHERE title = ?";
+
+        try (Connection connection = DbClient.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, title);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getLong(1);
+            }
+        }
+    }
+
+    public long countProcessedMessages(UUID messageId) throws SQLException {
+        String sql = "SELECT count(*) FROM processed_messages WHERE message_id = ?";
+
+        try (Connection connection = DbClient.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setObject(1, messageId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getLong(1);
+            }
+        }
+    }
+
+    /** ID задачи, созданной из сообщения, или null, если сообщения нет или задача не привязана. */
+    public Long findTaskIdByMessage(UUID messageId) throws SQLException {
+        String sql = "SELECT task_id FROM processed_messages WHERE message_id = ?";
+
+        try (Connection connection = DbClient.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setObject(1, messageId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return null;
+                }
+                long taskId = resultSet.getLong("task_id");
+                return resultSet.wasNull() ? null : taskId;
+            }
         }
     }
 

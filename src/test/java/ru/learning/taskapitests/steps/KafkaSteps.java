@@ -6,6 +6,7 @@ import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
 import ru.learning.taskapitests.config.TestConfig;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
+import ru.learning.taskapitests.kafka.DeadLetterMessage;
 import ru.learning.taskapitests.kafka.KafkaProducerClient;
 import ru.learning.taskapitests.kafka.TaskEventMessage;
 import ru.learning.taskapitests.kafka.TopicListener;
@@ -156,6 +157,69 @@ public class KafkaSteps implements AutoCloseable {
         }
         try {
             return eventType.equals(MAPPER.readTree(message.value()).path("eventType").asText());
+        } catch (JsonProcessingException e) {
+            return false;
+        }
+    }
+
+
+    @Step("Дождаться события создания задачи по команде {messageId}")
+    public TaskEventMessage awaitCreatedEventByCorrelation(TopicListener listener, String messageId) {
+        TopicListener.Message message = listener.awaitMessage(
+                candidate -> isCreatedBy(candidate, messageId), EVENT_TIMEOUT);
+        Allure.addAttachment("Событие TASK_CREATED", "application/json", message.value());
+        try {
+            return MAPPER.readValue(message.value(), TaskEventMessage.class);
+        } catch (JsonProcessingException e) {
+            throw new AssertionError("Событие не соответствует контракту: " + e.getOriginalMessage()
+                    + "\n" + message.value(), e);
+        }
+    }
+
+    @Step("Проверить, что событий создания по команде {messageId} за {waitTime}: {expected}")
+    public void checkCreatedEventsCount(TopicListener listener, String messageId, Duration waitTime, long expected) {
+        List<TopicListener.Message> messages = listener.collectFor(waitTime);
+
+        assertThat(messages.stream().filter(message -> isCreatedBy(message, messageId)).count())
+                .as("Событий TASK_CREATED с correlationId " + messageId)
+                .isEqualTo(expected);
+    }
+
+    @Step("Дождаться сообщения в task_in_dlq для отправленного текста")
+    public DeadLetterMessage awaitDeadLetter(TopicListener listener, String originalValue) {
+        TopicListener.Message message = listener.awaitMessage(
+                candidate -> isDeadLetterFor(candidate, originalValue), EVENT_TIMEOUT);
+        Allure.addAttachment("Сообщение в task_in_dlq", "application/json", message.value());
+        try {
+            return MAPPER.readValue(message.value(), DeadLetterMessage.class);
+        } catch (JsonProcessingException e) {
+            throw new AssertionError("Сообщение в task_in_dlq не соответствует контракту: " + e.getOriginalMessage()
+                    + "\n" + message.value(), e);
+        }
+    }
+
+    @Step("Проверить сообщение в task_in_dlq: причина «{expectedError}»")
+    public void checkDeadLetter(DeadLetterMessage message, String originalValue, String expectedError) {
+        assertThat(message.error()).as("Причина отклонения (error)").isEqualTo(expectedError);
+        assertThat(message.originalValue()).as("Исходный текст сообщения (originalValue)").isEqualTo(originalValue);
+        assertThat(Instant.parse(message.failedAt()))
+                .as("failedAt (время отклонения, UTC)")
+                .isBetween(Instant.now().minus(Duration.ofMinutes(10)), Instant.now().plus(Duration.ofMinutes(10)));
+    }
+
+    private boolean isCreatedBy(TopicListener.Message message, String messageId) {
+        try {
+            var json = MAPPER.readTree(message.value());
+            return "TASK_CREATED".equals(json.path("eventType").asText())
+                    && messageId.equals(json.path("correlationId").asText());
+        } catch (JsonProcessingException e) {
+            return false;
+        }
+    }
+
+    private boolean isDeadLetterFor(TopicListener.Message message, String originalValue) {
+        try {
+            return originalValue.equals(MAPPER.readTree(message.value()).path("originalValue").asText());
         } catch (JsonProcessingException e) {
             return false;
         }
