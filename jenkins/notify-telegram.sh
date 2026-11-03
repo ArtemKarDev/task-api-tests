@@ -58,6 +58,25 @@ ${summary}${failed_list}
 Build: ${BUILD_URL}
 Allure: ${BUILD_URL}allure/"
 
+# Chart image: QuickChart renders a Chart.js config to PNG. Optional: if anything fails, only the text is sent.
+if [ "$total" -gt 0 ]; then
+  chart_file="$(mktemp --suffix=.png)"
+  config=$(printf '{"type":"doughnut","data":{"labels":["Passed: %s","Failed: %s","Skipped: %s"],"datasets":[{"data":[%s,%s,%s],"backgroundColor":["#2ecc71","#e74c3c","#95a5a6"]}]},"options":{"title":{"display":true,"text":"%s: %s (#%s)"},"legend":{"position":"right"}}}' \
+    "$passed" "$failed" "$skipped" "$passed" "$failed" "$skipped" "${STAND:-?}" "${TESTS:-?}" "${BUILD_NUMBER:-0}")
+  if curl -s -S -f --max-time 20 -G "https://quickchart.io/chart" \
+       --data-urlencode "c=${config}" --data-urlencode "w=520" --data-urlencode "h=300" \
+       --data-urlencode "bkg=white" -o "$chart_file"; then
+    curl -s -S --max-time 30 "https://api.telegram.org/bot${TG_TOKEN}/sendPhoto" \
+      -F "chat_id=${TG_CHAT}" \
+      -F "photo=@${chart_file}" \
+      --form-string "caption=${icon} ${STAND:-?}: ${TESTS:-?} | #${BUILD_NUMBER} ${RESULT} | ${passed}/${total}" \
+      -o /dev/null -w "Telegram photo: HTTP %{http_code}\n"
+  else
+    echo "Chart was not generated, sending text only"
+  fi
+  rm -f "$chart_file"
+fi
+
 curl -s -S --max-time 20 \
   "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
   --data-urlencode "chat_id=${TG_CHAT}" \
