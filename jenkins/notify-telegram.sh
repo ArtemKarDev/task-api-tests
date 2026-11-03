@@ -51,7 +51,8 @@ esac
 # ---------- caption (Telegram HTML) ----------
 caption="${icon} <b>Results:</b>
 <b>Stand:</b> $(esc "${STAND:-?}")
-<b>Tests:</b> $(esc "${TESTS:-?}")"
+<b>Tests:</b> $(esc "${TESTS:-?}")
+<b>Trigger:</b> $(esc "${TRIGGER:-manual}")"
 if [ "${NEED_BROWSER:-false}" = "true" ]; then
   caption="${caption}
 <b>Browser:</b> $(esc "${BROWSER:-?}")"

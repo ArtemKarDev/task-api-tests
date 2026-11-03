@@ -21,6 +21,7 @@ pipeline {
                     booleanParam(name: 'BACKUP', value: false),
                     string(name: 'TESTS', value: 'regression'),
                     string(name: 'BROWSER', value: 'chrome')
+                    string(name: 'TRIGGER', value: 'nightly regression'),
                 ]
             }
         }

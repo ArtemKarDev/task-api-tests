@@ -16,6 +16,7 @@ pipeline {
         choice(name: 'TESTS', choices: ['api | db', 'api | db | kafka', 'kafka', 'ui', 'smoke', 'regression', 'api', 'db', 'unit'],
                description: 'Теги JUnit (параметр -Dgroups)')
         choice(name: 'BROWSER', choices: ['chrome', 'firefox'], description: 'Браузер для UI-тестов')
+        string(name: 'TRIGGER', defaultValue: 'manual', description: 'Источник запуска (заполняют вызывающие задания)')
     }
 
     stages {
@@ -40,7 +41,8 @@ pipeline {
                     string(name: 'STAND', value: params.STAND),
                     string(name: 'ACTION', value: 'up'),
                     booleanParam(name: 'RESET_DATA', value: params.RESET_DATA),
-                    booleanParam(name: 'BACKUP', value: params.BACKUP)
+                    booleanParam(name: 'BACKUP', value: params.BACKUP),
+                    string(name: 'TRIGGER', value: params.TRIGGER)
                 ]
             }
         }
@@ -50,7 +52,8 @@ pipeline {
                 build job: 'stand-tests', parameters: [
                     string(name: 'STAND', value: params.STAND),
                     string(name: 'TESTS', value: params.TESTS),
-                    string(name: 'BROWSER', value: params.BROWSER)
+                    string(name: 'BROWSER', value: params.BROWSER),
+                    string(name: 'TRIGGER', value: params.TRIGGER)
                 ]
             }
         }

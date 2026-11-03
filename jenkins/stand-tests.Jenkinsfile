@@ -10,6 +10,7 @@ pipeline {
         choice(name: 'STAND', choices: ['stage', 'dev'], description: 'Стенд, против которого запускаются тесты')
         choice(name: 'TESTS', choices: ['api | db', 'api | db | kafka', 'kafka', 'ui', 'smoke', 'regression', 'api', 'db', 'unit'], description: 'Теги JUnit (параметр -Dgroups)')
         choice(name: 'BROWSER', choices: ['chrome', 'firefox'], description: 'Браузер для UI-тестов (запускается в контейнере Selenium)')
+        string(name: 'TRIGGER', defaultValue: 'manual', description: 'Источник запуска (заполняют вызывающие задания)')
     }
 
     environment {
@@ -128,6 +129,7 @@ pipeline {
                     {
                         echo "Stand=${STAND}"
                         echo "Tests=${TESTS}"
+                        echo "Trigger=${TRIGGER:-manual}"
                         echo "Base_URL=http://task-app:8080"
                         echo "Kafka=kafka:29092"
                         if [ "$NEED_BROWSER" = "true" ]; then echo "Browser=${BROWSER}"; else echo "Browser=not_used"; fi
