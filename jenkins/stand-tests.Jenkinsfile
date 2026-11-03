@@ -144,6 +144,12 @@ pipeline {
             junit allowEmptyResults: true, testResults: 'surefire-reports/*.xml'
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             archiveArtifacts artifacts: 'stand-*.log', allowEmptyArchive: true
+            withEnv(["BUILD_RESULT=${currentBuild.currentResult}"]) {
+                withCredentials([string(credentialsId: 'telegram-bot-token', variable: 'TG_TOKEN'),
+                                 string(credentialsId: 'telegram-chat-id', variable: 'TG_CHAT')]) {
+                    sh 'bash jenkins/notify-telegram.sh || true'
+                }
+            }
         }
     }
 }
