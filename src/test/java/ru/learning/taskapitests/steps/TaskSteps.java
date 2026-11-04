@@ -2,27 +2,27 @@ package ru.learning.taskapitests.steps;
 
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.generated.model.ApiErrorResponse;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Component
 public class TaskSteps {
 
     private final TaskApiClient taskApi;
-    private final List<Long> createdTaskIds = new ArrayList<>();
+    private final CreatedTasksRegistry registry;
     public static final Logger log = LoggerFactory.getLogger(TaskSteps.class);
 
     public static final Map<Integer, String> REASON_PHRASES = Map.of(
@@ -34,8 +34,9 @@ public class TaskSteps {
             500, "Internal Server Error");
 
 
-    public TaskSteps(TaskApiClient taskApi) {
+    public TaskSteps(TaskApiClient taskApi, CreatedTasksRegistry registry) {
         this.taskApi = taskApi;
+        this.registry = registry;
     }
 
     @Step("Получить задачу по ID: {taskId}")
@@ -209,23 +210,26 @@ public class TaskSteps {
     }
 
     public void clearTaskIdInCreatedList() {
-        createdTaskIds.clear();
+        registry.clear();
     }
 
     public void cleanDbCreatedTasks() {
-        log.info("Очистка БД, задачи на удаление: {}", createdTaskIds);
-        for (Long taskId : createdTaskIds) {
-            int statusCode =
-                    deleteTask(taskId).then().extract().statusCode();
-            if (statusCode != 204 && statusCode != 404) {
-                throw new AssertionError("Неудалось удалить задачу с ID " + taskId + " HTTP-статус: " + statusCode);
+        List<Long> taskIds = registry.snapshot();
+        log.info("Очистка БД, задачи на удаление: {}", taskIds);
+        try {
+            for (Long taskId : taskIds) {
+                int statusCode = deleteTask(taskId).then().extract().statusCode();
+                if (statusCode != 204 && statusCode != 404) {
+                    throw new AssertionError("Неудалось удалить задачу с ID " + taskId + " HTTP-статус: " + statusCode);
+                }
             }
+        } finally {
+            registry.clear();
         }
-        createdTaskIds.clear();
     }
 
     public void registerTaskForCleanup(Long taskId) {
-        createdTaskIds.add(taskId);
+        registry.register(taskId);
     }
 
     public Long getTaskIdFromResponse(Response response) {

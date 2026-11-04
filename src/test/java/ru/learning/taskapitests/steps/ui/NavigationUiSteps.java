@@ -1,6 +1,7 @@
 package ru.learning.taskapitests.steps.ui;
 
 import io.qameta.allure.Step;
+import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.ui.components.Header;
 import ru.learning.taskapitests.ui.pages.*;
 
@@ -9,6 +10,7 @@ import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 
+@Component
 public class NavigationUiSteps {
 
     @Step("Открыть страницу «Поиск задач»")

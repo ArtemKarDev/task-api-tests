@@ -1,8 +1,8 @@
 package ru.learning.taskapitests.steps.ui;
 
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
+import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.steps.TaskSteps;
 import ru.learning.taskapitests.ui.components.TaskForm;
@@ -12,8 +12,8 @@ import ru.learning.taskapitests.ui.pages.TasksPage;
 
 import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
+@Component
 public class TaskUiSteps {
 
     private final TaskSteps apiSteps;
