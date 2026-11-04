@@ -20,6 +20,14 @@
   - [Дерево папок](#дерево-папок)
   - [Правила](#правила)
   - [Куда что добавлять](#куда-что-добавлять)
+- [Как писать тест](#как-писать-тест)
+  - [Жизнь одного теста](#жизнь-одного-теста)
+  - [Скелет API-теста](#скелет-api-теста)
+  - [Данные и шаги](#данные-и-шаги)
+  - [Параметризованные тесты](#параметризованные-тесты)
+  - [Тесты Kafka](#тесты-kafka)
+  - [UI-тесты](#ui-тесты)
+  - [Чек-лист нового теста](#чек-лист-нового-теста)
 
 ---
 
@@ -242,3 +250,131 @@ pom.xml
 | Новый топик Kafka | настройка в `application.yml`, метод в `KafkaSteps` |
 
 <p align="right"><a href="#оглавление">↑ к оглавлению</a></p>
+
+---
+
+## Как писать тест
+
+### Жизнь одного теста
+
+```mermaid
+sequenceDiagram
+    participant T as Тест
+    participant S as Шаги
+    participant A as REST API
+    participant D as PostgreSQL
+    T->>S: createTaskDto(запрос)
+    S->>A: POST /api/tasks
+    A-->>S: 201 и id
+    Note over S: id запоминается для очистки
+    T->>S: checkStatus(ответ, 201)
+    T->>S: dbStep.checkTaskSaved(id, запрос)
+    S->>D: SELECT по id
+    Note over T,D: после теста
+    S->>A: DELETE /api/tasks/{id}
+```
+
+Тест вызывает шаги, шаги работают с системами. Всё, что тест создал, удаляется автоматически после него.
+
+### Скелет API-теста
+
+Тестовый класс наследует `TestBase`: из него приходят готовые шаги (`step`, `dbStep`, `kafkaStep`), клиент (`taskApi`) и настройки (`props`). Пример:
+
+```java
+@Tag(Tags.API)
+@Tag(Tags.REGRESSION)
+@Epic("API")
+@Feature("Создание задачи")
+class CreateTaskExampleTests extends TestBase {
+
+    @Test
+    @DisplayName("Созданная задача сохраняется в БД без искажений")
+    void shouldSaveCreatedTaskToDatabase() {
+        var request = TaskDataFactory.defaultTaskRequestDTO();
+
+        Response response = step.createTaskDto(request);
+
+        step.checkStatus(response, 201);
+        dbStep.checkTaskSaved(response.jsonPath().getLong("id"), request);
+    }
+}
+```
+
+Что значат аннотации:
+
+| Аннотация | Для чего |
+|---|---|
+| `@Tag(Tags.API)` | вид теста: по нему тест попадает в запуск `-Dgroups=api` |
+| `@Tag(Tags.REGRESSION)` | вхождение в полный набор; быстрые проверки дополнительно помечаются `@Tag(Tags.SMOKE)` |
+| `@Epic`, `@Feature` | группировка в отчёте Allure |
+| `@DisplayName` | читаемое название теста по-русски: оно видно в отчёте |
+
+### Данные и шаги
+
+**Данные.** Запросы собирает `TaskDataFactory`: `defaultTaskRequestDTO()` даёт корректный запрос с уникальным названием, `customTaskRequestDTO(...)` позволяет изменить нужные поля, есть генераторы строк заданной длины для граничных значений. Прямые строки с названиями не пишем: уникальность нужна, чтобы тесты не мешали друг другу.
+
+**Шаги.** Основные (полный список смотрите в классах):
+
+| Класс | Что делает |
+|---|---|
+| `TaskSteps` | запросы к REST API (создать, получить, изменить, удалить) и проверки ответов и формата ошибок |
+| `DbSteps` | проверки записей и счётчиков в базе данных |
+| `KafkaSteps` | отправка команд, чтение событий, проверка отклонённых сообщений |
+| `TaskUiSteps`, `NavigationUiSteps` | действия и проверки в браузере |
+
+**Очистка.** Когда шаг создаёт задачу (ответ 201), её номер попадает в список для очистки, а после теста `TestBase` удаляет все такие задачи через API. Если вы создали задачу в обход шагов (например, прямым запросом), добавьте её вручную: `step.registerTaskForCleanup(id)`.
+
+### Параметризованные тесты
+
+Одинаковый сценарий на нескольких значениях пишется через JUnit-параметры:
+
+```java
+@ParameterizedTest(name = "приоритет {0}")
+@EnumSource(CreateTaskRequest.PriorityEnum.class)
+@DisplayName("Задача создаётся с любым допустимым приоритетом")
+void shouldCreateTaskWithEachPriority(CreateTaskRequest.PriorityEnum priority) {
+    var request = TaskDataFactory.customTaskRequestDTO(r -> r.priority(priority));
+
+    step.checkStatus(step.createTaskDto(request), 201);
+}
+```
+
+Для списков значений используют `@CsvSource`, для сложных данных `@MethodSource`. Название `name = "..."` подставляет значение параметра в отчёт.
+
+### Тесты Kafka
+
+Главное правило: **слушатель запускается до действия**, которое должно вызвать событие. Иначе событие придёт раньше, чем мы начали слушать, и тест его не увидит.
+
+```java
+var listener = kafkaStep.startListening(props.kafka().topicOut());
+var response = step.createTaskDto(request);          // действие порождает событие
+// дальше шаги ждут событие (до 20 секунд) и проверяют его содержимое
+```
+
+Отправка команды и чтение отклонённых сообщений устроены так же; готовые методы лежат в `KafkaSteps`.
+
+### UI-тесты
+
+UI-тесты наследуют `UiTestBase` (он настраивает Selenide, подключает отчёт Allure и закрывает браузер). Страницы описаны Page Object'ами в `ui/pages` и `ui/components`, действия и проверки собраны в шагах `uiStep` и `navStep`:
+
+```java
+var request = TaskDataFactory.defaultTaskRequestDTO();
+long taskId = uiStep.createTaskViaUi(navStep.openCreateTaskPage(), request);
+dbStep.checkTaskSaved(taskId, request);
+```
+
+Page Object ничего не проверяет: он только находит элементы и выполняет действия. Проверки делают шаги или тест. При падении теста скриншот и исходник страницы прикладываются к отчёту автоматически.
+
+### Чек-лист нового теста
+
+- [ ] класс наследует `TestBase` (или `UiTestBase` для интерфейса) и лежит в `tests/<вид>`;
+- [ ] есть теги вида и набора (`@Tag(Tags.API)`, `@Tag(Tags.REGRESSION)`), при необходимости `SMOKE`;
+- [ ] есть `@Epic`, `@Feature` и русский `@DisplayName`;
+- [ ] данные берутся из `TaskDataFactory`, названия уникальные;
+- [ ] тест вызывает шаги, а не клиентов напрямую;
+- [ ] созданное через шаги удаляется автоматически, созданное в обход шагов зарегистрировано для очистки;
+- [ ] для Kafka слушатель запущен до действия;
+- [ ] тест проходит локально и не зависит от порядка запуска.
+
+<p align="right"><a href="#оглавление">↑ к оглавлению</a></p>
+
