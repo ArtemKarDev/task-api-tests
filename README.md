@@ -15,6 +15,11 @@
     - [Список настроек](#список-настроек)
     - [Секреты](#секреты)
     - [Как узнать, откуда пришло значение](#как-узнать-откуда-пришло-значение)
+- [Структура проекта](#структура-проекта)
+  - [Слои](#слои)
+  - [Дерево папок](#дерево-папок)
+  - [Правила](#правила)
+  - [Куда что добавлять](#куда-что-добавлять)
 
 ---
 
@@ -164,5 +169,76 @@ $env:TEST_ENV = "stage"         # или переменная окружения
 ```powershell
 mvn test "-Dtest=SpringSettingsTests" | Select-String "tests\."
 ```
+
+<p align="right"><a href="#оглавление">↑ к оглавлению</a></p>
+
+---
+
+## Структура проекта
+
+### Слои
+
+Тест не обращается к клиентам, базе и браузеру напрямую: он вызывает **шаги**, а шаги работают с клиентами. За создание всех объектов и подачу настроек отвечает Spring.
+
+```mermaid
+flowchart LR
+    T["Тесты<br/>tests/api, db, kafka, ui"] --> S["Шаги (steps)<br/>действия и проверки"]
+    S --> C1["TaskApiClient + ApiSpec"] --> API[("REST API")]
+    S --> C2["TaskRepository + DbClient"] --> DB[("PostgreSQL")]
+    S --> C3["TopicListener + KafkaProducerClient"] --> KF[("Kafka")]
+    S --> C4["Страницы и компоненты<br/>ui/pages, ui/components"] --> BR[("Браузер")]
+    SP["Spring: бины и TestProperties"] -.-> S
+```
+
+### Дерево папок
+
+```text
+src/test/java/ru/learning/taskapitests
+├── Tags.java              имена тегов JUnit
+├── TestBase.java          общий родитель тестов: контекст Spring, шаги, очистка данных
+├── client/                HTTP-клиент REST API (TaskApiClient)
+├── specs/                 настройка запросов REST Assured (ApiSpec)
+├── db/                    доступ к PostgreSQL (DbClient, TaskRepository, TaskDbRecord)
+├── kafka/                 клиенты Kafka и модели сообщений
+├── config/                настройки и рецепты Spring (TestProperties, TestsConfig, ProfileGuard)
+├── data/                  фабрика тестовых данных (TaskDataFactory)
+├── steps/                 шаги с @Step: действия и проверки
+│   └── ui/                шаги для интерфейса
+├── ui/                    Selenide: базовый класс UI-тестов, скриншоты при падении
+│   ├── pages/             Page Object: страницы
+│   └── components/        Page Object: шапка, форма, строка таблицы
+├── utils/                 вспомогательное: JSON, вложения Allure
+└── tests/                 сами тесты
+    ├── api/   db/   kafka/   ui/   unit/
+
+src/test/resources
+├── application.yml, application-<стенд>.yml    настройки
+├── allure.properties, junit-platform.properties
+└── openapi/openapi-task-api-service.json       контракт API
+
+jenkins/                   Jenkinsfile и скрипты запуска в Jenkins
+pom.xml
+```
+
+Модели запросов и ответов REST API не написаны вручную: при сборке они генерируются из `openapi-task-api-service.json` в пакет `ru.learning.taskapitests.generated.model` (папка `target`, в репозитории её нет).
+
+### Правила
+
+1. **Тест вызывает шаги**, а не клиентов и репозитории напрямую.
+2. **Проверки живут в тестах и шагах.** Page Object ничего не проверяет: он только находит элементы и выполняет действия.
+3. **Каждый тест убирает за собой.** Задачи, созданные через шаги, удаляются автоматически после теста; названия делает `TaskDataFactory` уникальными.
+4. **Настройки только через `props`** (`TestProperties`), а не строками в коде.
+5. **Новый вспомогательный класс** помечается `@Component` и лежит в пакете, который просматривает Spring (`client`, `db`, `specs`, `steps`), иначе Spring его не найдёт.
+
+### Куда что добавлять
+
+| Что добавляем | Куда |
+|---|---|
+| Новый REST-тест | `tests/api`, класс наследует `TestBase` |
+| Новая страница интерфейса | `ui/pages`, её части в `ui/components` |
+| Новое действие или проверка | `steps` (или `steps/ui`), с аннотацией `@Step` |
+| Новая настройка | `application.yml` и поле в `TestProperties` |
+| Новая модель запроса или ответа | обновить `openapi-task-api-service.json`, модели сгенерируются |
+| Новый топик Kafka | настройка в `application.yml`, метод в `KafkaSteps` |
 
 <p align="right"><a href="#оглавление">↑ к оглавлению</a></p>
