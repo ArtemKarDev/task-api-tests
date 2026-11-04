@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.config.TestConfig;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
@@ -21,7 +22,9 @@ public class UiTestBase extends TestBase {
 
     public static final String ALLURE_LISTENER_NAME = "AllureSelenide";
 
+    @Autowired
     protected TaskUiSteps uiStep;
+    @Autowired
     protected NavigationUiSteps navStep;
 
     @BeforeAll
@@ -41,12 +44,6 @@ public class UiTestBase extends TestBase {
         if (remoteUrl != null) {
             Configuration.remote = remoteUrl;
         }
-    }
-
-    @BeforeEach
-    protected void createUiSteps() {
-        uiStep = new TaskUiSteps(step);
-        navStep = new NavigationUiSteps();
     }
 
     @BeforeEach

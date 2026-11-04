@@ -3,6 +3,7 @@ package ru.learning.taskapitests.client;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
@@ -11,6 +12,7 @@ import ru.learning.taskapitests.utils.JsonUtils;
 
 import static io.restassured.RestAssured.given;
 
+@Component
 public class TaskApiClient {
 
     private static final String POST_TASK_CREATE = "/api/tasks";

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.config.TestConfig;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.kafka.DeadLetterMessage;
@@ -24,6 +26,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Шаги работы с Kafka. Соединения создаются по требованию и закрываются методом close() после теста. */
+
+@Component
+@Scope("prototype")
 public class KafkaSteps implements AutoCloseable {
 
     private static final Duration EVENT_TIMEOUT = Duration.ofSeconds(20);

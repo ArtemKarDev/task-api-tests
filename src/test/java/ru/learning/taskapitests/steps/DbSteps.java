@@ -1,6 +1,7 @@
 package ru.learning.taskapitests.steps;
 
 import io.qameta.allure.Step;
+import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.db.TaskDbRecord;
 import ru.learning.taskapitests.db.TaskRepository;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Component
 public class DbSteps {
 
     private final TaskRepository taskRepository = new TaskRepository();
