@@ -1,0 +1,19 @@
+spring:
+  profiles:
+    active: ${env:${TEST_ENV:local}}
+tests:
+  base-url: http://localhost:8080
+  db:
+    url: jdbc:postgresql://localhost:5433/taskdb
+    user: taskuser
+  browser:
+    name: chrome
+    headless: false
+    size: 1920x1080
+    timeout-ms: 6000
+    remote-url:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic-in: task_in
+    topic-in-dlq: task_in_dlq
+    topic-out: task_out

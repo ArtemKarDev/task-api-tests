@@ -1,23 +1,30 @@
 package ru.learning.taskapitests.config;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Properties;
+import org.springframework.boot.Banner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.context.ConfigurableApplicationContext;
 
+/**
+ * Переходный слой: прежний набор методов, но значения теперь берёт Spring
+ * (application.yml, профили, параметры -D, переменные окружения).
+ * Будет удалён, когда тесты начнут получать TestProperties через внедрение (шаг 8-6).
+ */
+public final class TestConfig {
 
-public class TestConfig {
-
-    private static final List<String> ALLOWED_ENVS = List.of("local", "dev", "stage");
-
-    private static final String LOCAL_DEV_DB_PASSWORD = "local_dev_password";
-
-    private static final String ENV = resolveEnv();
-    private static final Properties FILE_PROPERTIES = loadProperties();
+    // Порядок объявления важен: сначала контекст, потом то, что берётся из него
+    private static final ConfigurableApplicationContext CONTEXT = start();
+    private static final TestProperties PROPS = CONTEXT.getBean(TestProperties.class);
+    private static final String ENV = CONTEXT.getEnvironment().getActiveProfiles()[0];
 
     private TestConfig() {
+    }
+
+    private static ConfigurableApplicationContext start() {
+        SpringApplication application = new SpringApplication(SettingsConfig.class);
+        application.setWebApplicationType(WebApplicationType.NONE);
+        application.setBannerMode(Banner.Mode.OFF);
+        return application.run();
     }
 
     public static String getEnv() {
@@ -25,64 +32,62 @@ public class TestConfig {
     }
 
     public static String getBaseUrl() {
-        return require("base.url");
+        return required(PROPS.baseUrl(), "tests.base-url");
     }
 
     public static String getDbUrl() {
-        return require("db.url");
+        return required(PROPS.db().url(), "tests.db.url");
     }
 
     public static String getDbUser() {
-        return require("db.user");
+        return required(PROPS.db().user(), "tests.db.user");
     }
 
     public static String getDbPassword() {
-        String password = get("db.password");
-        if (!isBlank(password)) {
-            return password;
+        String password = PROPS.db().password();
+        if (password == null || password.isBlank()) {
+            throw new IllegalStateException("Не задан пароль БД для стенда '" + ENV
+                    + "'. Задайте переменную окружения TESTS_DB_PASSWORD или параметр -Dtests.db.password=...");
         }
-        if ("local".equals(ENV)) {
-            return LOCAL_DEV_DB_PASSWORD;
-        }
-        throw new IllegalStateException("Не задан пароль БД для стенда" + ENV
-                + ". Задайте переменную окружения DB_PASSWORD или параметр -Db.password=...");
+        return password;
     }
 
     public static String getBrowser() {
-        return require("browser");
+        return required(PROPS.browser().name(), "tests.browser.name");
     }
 
     public static boolean isHeadless() {
-        return Boolean.parseBoolean(require("headless"));
+        return PROPS.browser().headless();
     }
 
     public static String getBrowserSize() {
-        return require("browser.size");
+        return required(PROPS.browser().size(), "tests.browser.size");
     }
 
     public static long getUiTimeoutMs() {
-        return Long.parseLong(require("ui.timeout.ms"));
+        return PROPS.browser().timeoutMs();
     }
 
+    /** Адрес удалённого Selenium или null, если браузер запускается локально. */
     public static String getRemoteUrl() {
-        String value = get("remote.url");
-        return isBlank(value) ? null : value;
+        String value = PROPS.browser().remoteUrl();
+        return value == null || value.isBlank() ? null : value;
     }
 
     public static String getKafkaBootstrapServers() {
-        return require("kafka.bootstrap.servers");
+        return required(PROPS.kafka().bootstrapServers(), "tests.kafka.bootstrap-servers");
     }
 
     public static String getKafkaTopicIn() {
-        return require("kafka.topic.in");
+        return required(PROPS.kafka().topicIn(), "tests.kafka.topic-in");
     }
 
     public static String getKafkaTopicInDlq() {
-        return require("kafka.topic.in.dlq");
+        return required(PROPS.kafka().topicInDlq(), "tests.kafka.topic-in-dlq");
     }
 
     public static String getKafkaTopicOut() {
-        return require("kafka.topic.out");
+        return required(PROPS.kafka().topicOut(), "tests.kafka.topic-out");
     }
 
     /** Текстовое описание текущей конфигурации (без пароля) для логов и отчёта. */
@@ -102,67 +107,10 @@ public class TestConfig {
                 remote == null ? "(не задан, браузер запускается локально)" : remote);
     }
 
-    private static String get(String key) {
-        String fromSystem = System.getProperty(key);
-        if (!isBlank(fromSystem)) {
-            return fromSystem;
-        }
-        String fromEnvironment = System.getenv(toEnvName(key));
-        if (!isBlank(fromEnvironment)) {
-            return fromEnvironment;
-        }
-        return FILE_PROPERTIES.getProperty(key);
-    }
-
-    private static String require(String key) {
-        String value = get(key);
-        if (isBlank(value)) {
-            throw new IllegalStateException("Не задан параметр '" + key + "' для стенда '" + ENV
-                    + "'. Добавьте его в config/" + ENV + ".properties, "
-                    + "или задайте -D" + key + " / переменную " + toEnvName(key));
+    private static String required(String value, String key) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("Не задан параметр '" + key + "' для стенда '" + ENV + "'");
         }
         return value;
     }
-
-    private static String resolveEnv() {
-        String value = System.getProperty("env");
-        if (isBlank(value)) {
-            value = System.getenv("TEST_ENV");
-        }
-        if (isBlank(value)) {
-            value = "local";
-        }
-        value = value.trim().toLowerCase();
-        if (!ALLOWED_ENVS.contains(value)) {
-            throw new IllegalStateException("Неизвестный стенд '" + value + "'. Допустимо: " + ALLOWED_ENVS);
-        }
-        return value;
-    }
-
-    private static Properties loadProperties() {
-        Properties properties = new Properties();
-        load(properties, "config/default.properties");
-        load(properties, "config/" + ENV + ".properties");
-        return properties;
-    }
-
-    private static void load(Properties target, String resourcePath) {
-        try (InputStream input = TestConfig.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (input == null) {
-                throw new IllegalStateException("Файл " + resourcePath + " не найден в src/test/resources");
-            }
-            target.load(new InputStreamReader(input, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new IllegalStateException("Не удалось прочитать " + resourcePath, e);
-        }
-    }
-
-    private static String toEnvName(String key) {
-        return key.toUpperCase().replace('.', '_');
-    }
-
-    private static boolean isBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
 }

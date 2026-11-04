@@ -35,6 +35,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: "env-${params.STAND}", variable: 'ENV_FILE')]) {
                     sh '''
+                        set +x
                         set -eu
                         tr -d '\\r' < "$ENV_FILE" > "/tmp/stand-${BUILD_NUMBER}.env"
                         set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
@@ -55,6 +56,7 @@ pipeline {
             when { expression { env.NEED_BROWSER == 'true' } }
             steps {
                 sh '''
+                    set +x
                     set -eu
                     set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
 
@@ -74,6 +76,7 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
+                    set +x
                     set -eu
                     set -a; . "/tmp/stand-${BUILD_NUMBER}.env"; set +a
 
@@ -83,7 +86,7 @@ pipeline {
 
                     BROWSER_ARGS=""
                     if [ "$NEED_BROWSER" = "true" ]; then
-                        BROWSER_ARGS="-e BROWSER=$BROWSER -e HEADLESS=true -e REMOTE_URL=http://selenium:4444/wd/hub"
+                        BROWSER_ARGS="-e TESTS_BROWSER_NAME=$BROWSER -e TESTS_BROWSER_HEADLESS=true -e TESTS_BROWSER_REMOTEURL=http://selenium:4444/wd/hub"
                     fi
 
                     tar czf "$ARCHIVE" --exclude=.git --exclude=target --exclude=allure-results --exclude=surefire-reports -C "$WORKSPACE" .
@@ -95,10 +98,11 @@ pipeline {
                       -w /workspace \
                       -e TEST_ENV="$STAND" \
                       -e TEST_GROUPS="$TESTS" \
-                      -e BASE_URL="http://task-app:8080" \
-                      -e DB_URL="jdbc:postgresql://postgres:5432/${DB_NAME}" \
-                      -e KAFKA_BOOTSTRAP_SERVERS="kafka:29092" \
-                      -e DB_USER -e DB_PASSWORD \
+                      -e TESTS_BASEURL="http://task-app:8080" \
+                      -e TESTS_DB_URL="jdbc:postgresql://postgres:5432/${DB_NAME}" \
+                      -e TESTS_DB_USER="$DB_USER" \
+                      -e TESTS_DB_PASSWORD="$DB_PASSWORD" \
+                      -e TESTS_KAFKA_BOOTSTRAPSERVERS="kafka:29092" \
                       $BROWSER_ARGS \
                       --entrypoint sh \
                       "$MAVEN_IMAGE" \
@@ -114,6 +118,7 @@ pipeline {
     post {
         always {
             sh '''
+                set +x
                 CONTAINER="stand-tests-${BUILD_NUMBER}"
                 rm -rf allure-results surefire-reports
                 docker cp "$CONTAINER:/workspace/target/allure-results" allure-results || true
