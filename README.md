@@ -72,3 +72,59 @@ mvn allure:serve
 ```
 
 Один тестовый класс: `mvn test "-Dtest=CreateTaskTests"`. Тесты без окна браузера: добавить `"-Dtests.browser.headless=true"`.
+
+## Настройки
+
+Все настройки тестов описаны в `src/test/resources`: общие значения в `application.yml`, различия стендов в `application-local.yml`, `application-dev.yml`, `application-stage.yml`. Читает их Spring и складывает в объект `TestProperties`, который получают все классы тестов.
+
+### Выбор стенда
+
+Стенд выбирается параметром или переменной окружения (по умолчанию `local`):
+
+```powershell
+mvn test "-Denv=dev"            # параметр запуска
+$env:TEST_ENV = "stage"         # или переменная окружения
+```
+
+Допустимы только `local`, `dev`, `stage`: при любом другом значении (например, опечатке) запуск останавливается с понятным сообщением, а не идёт молча на другой стенд.
+
+### Как переопределить значение
+
+Любую настройку можно задать, не меняя файлы. Источники, от самого важного к самому слабому:
+
+1. параметр запуска `-Dtests.<имя>` (например, `"-Dtests.base-url=http://localhost:9000"`);
+2. переменная окружения `TESTS_<ИМЯ>` (например, `$env:TESTS_BASEURL = "http://localhost:9000"`);
+3. файл стенда `application-<стенд>.yml`;
+4. общий файл `application.yml`.
+
+Имя переменной окружения получается из имени настройки: убрать дефисы, заменить точки на подчёркивания, перевести в заглавные (`tests.kafka.bootstrap-servers` превращается в `TESTS_KAFKA_BOOTSTRAPSERVERS`).
+
+### Список настроек
+
+| Настройка | Переменная окружения | Что это | Значение по умолчанию (local) |
+|---|---|---|---|
+| `tests.base-url` | `TESTS_BASEURL` | адрес приложения | `http://localhost:8080` |
+| `tests.db.url` | `TESTS_DB_URL` | адрес PostgreSQL | `jdbc:postgresql://localhost:5433/taskdb` |
+| `tests.db.user` | `TESTS_DB_USER` | пользователь БД | `taskuser` |
+| `tests.db.password` | `TESTS_DB_PASSWORD` | пароль БД | для `local` в `application-local.yml`, для `dev` и `stage` только из переменной окружения |
+| `tests.browser.name` | `TESTS_BROWSER_NAME` | браузер | `chrome` |
+| `tests.browser.headless` | `TESTS_BROWSER_HEADLESS` | без окна браузера | `false` |
+| `tests.browser.size` | `TESTS_BROWSER_SIZE` | размер окна | `1920x1080` |
+| `tests.browser.timeout-ms` | `TESTS_BROWSER_TIMEOUTMS` | сколько Selenide ждёт элемент, мс | `6000` |
+| `tests.browser.remote-url` | `TESTS_BROWSER_REMOTEURL` | адрес удалённого Selenium (пусто: браузер запускается локально) | пусто |
+| `tests.kafka.bootstrap-servers` | `TESTS_KAFKA_BOOTSTRAPSERVERS` | адрес брокера Kafka | `localhost:9092` |
+| `tests.kafka.topic-in` | `TESTS_KAFKA_TOPICIN` | топик команд | `task_in` |
+| `tests.kafka.topic-in-dlq` | `TESTS_KAFKA_TOPICINDLQ` | топик отклонённых сообщений | `task_in_dlq` |
+| `tests.kafka.topic-out` | `TESTS_KAFKA_TOPICOUT` | топик событий | `task_out` |
+
+### Секреты
+
+Пароли в репозиторий не кладём. Для `dev` и `stage` пароль БД передаётся только переменной `TESTS_DB_PASSWORD` (на своём компьютере: `$env:TESTS_DB_PASSWORD = "..."`, в Jenkins: из хранилища Credentials). Исключение: пароль стенда `local` в `application-local.yml` учебный и совпадает с тем, что лежит в `compose.yaml` сервиса.
+
+### Как узнать, откуда пришло значение
+
+Если тест ходит не туда, куда ожидалось, запустите «детектор»: он печатает значение настройки и источник (файл со строкой, параметр или переменная окружения):
+
+```powershell
+mvn test "-Dtest=SpringSettingsTests" | Select-String "tests\."
+```
