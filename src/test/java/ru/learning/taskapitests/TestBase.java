@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.learning.taskapitests.client.TaskApiClient;
+import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.config.TestsConfig;
 import ru.learning.taskapitests.steps.DbSteps;
 import ru.learning.taskapitests.steps.KafkaSteps;
@@ -21,6 +22,8 @@ public class TestBase {
     protected DbSteps dbStep;
     @Autowired
     protected KafkaSteps kafkaStep;
+    @Autowired
+    protected TestProperties props;
 
     @BeforeEach
     protected void setUp() {

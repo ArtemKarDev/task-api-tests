@@ -4,6 +4,7 @@ import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
+import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
@@ -21,6 +22,12 @@ public class TaskApiClient {
     private static final String PATCH_TASK = "/api/tasks";
     private static final String DELETE_TASK = "/api/tasks";
 
+    private final ApiSpec apiSpec;
+
+    public TaskApiClient(ApiSpec apiSpec) {
+        this.apiSpec = apiSpec;
+    }
+
     private void attachResponseDetails(Response response) {
         AllureAttachments.attachStatus(response.statusCode());
 
@@ -36,7 +43,7 @@ public class TaskApiClient {
         AllureAttachments.attachRequest(requestBody);
 
         Response response = given()
-                .spec(ApiSpec.requestSpec())
+                .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
                 .post(POST_TASK_CREATE);
@@ -51,7 +58,7 @@ public class TaskApiClient {
         AllureAttachments.attachRequest(JsonUtils.toJson(request));
 
         Response response = given()
-                .spec(ApiSpec.requestSpec())
+                .spec(apiSpec.requestSpec())
                 .body(request)
                 .when()
                 .post(POST_TASK_CREATE);
@@ -69,7 +76,7 @@ public class TaskApiClient {
     public Response getTaskById(long taskId) {
 
         Response response = given()
-                .spec(ApiSpec.requestSpec())
+                .spec(apiSpec.requestSpec())
                 .when()
                 .get("/api/tasks/{id}", taskId);
 
@@ -81,7 +88,7 @@ public class TaskApiClient {
     @Step("Получить задачу по ID и обернуть в Task")
     public Task getTaskAsDto(long taskId) {
         Response response = given()
-                .spec(ApiSpec.requestSpec())
+                .spec(apiSpec.requestSpec())
                 .when()
                 .get(GET_TASK + "/{id}", taskId);
 
@@ -96,7 +103,7 @@ public class TaskApiClient {
         AllureAttachments.attachRequest(requestBody);
 
         Response response = given()
-                .spec(ApiSpec.requestSpec())
+                .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
                 .put("/api/tasks/{id}", taskId);
@@ -112,7 +119,7 @@ public class TaskApiClient {
         AllureAttachments.attachRequest(requestBody);
 
         Response response = given()
-                .spec(ApiSpec.requestSpec())
+                .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
                 .patch("/api/tasks/{id}", taskId);
@@ -125,7 +132,7 @@ public class TaskApiClient {
     @Step("Удалить задачу по Id: : {taskId}")
     public Response deleteTask(long taskId) {
         Response response = given()
-                .spec(ApiSpec.requestSpec())
+                .spec(apiSpec.requestSpec())
                 .when()
                 .delete("/api/tasks/{id}", taskId);
 
@@ -140,7 +147,7 @@ public class TaskApiClient {
             AllureAttachments.attachRequest(body);
         }
 
-        RequestSpecification request = given().spec(ApiSpec.requestSpec());
+        RequestSpecification request = given().spec(apiSpec.requestSpec());
         if (contentType != null) {
             request.contentType(contentType);
         }

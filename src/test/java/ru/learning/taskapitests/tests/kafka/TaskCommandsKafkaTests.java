@@ -13,7 +13,6 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
-import ru.learning.taskapitests.config.TestConfig;
 import ru.learning.taskapitests.data.TaskDataFactory;
 import ru.learning.taskapitests.kafka.DeadLetterMessage;
 import ru.learning.taskapitests.kafka.TaskEventMessage;
@@ -41,7 +40,7 @@ class TaskCommandsKafkaTests extends TestBase {
     @Tag(Tags.SMOKE)
     @DisplayName("Команда в task_in создаёт задачу, событие несёт messageId в correlationId")
     void shouldCreateTaskFromKafkaCommand() {
-        var out = kafkaStep.startListening(TestConfig.getKafkaTopicOut());
+        var out = kafkaStep.startListening(props.kafka().topicOut());
         String messageId = UUID.randomUUID().toString();
         var request = TaskDataFactory.defaultTaskRequestDTO();
 
@@ -64,7 +63,7 @@ class TaskCommandsKafkaTests extends TestBase {
     @ValueSource(strings = {" ", "     "})
     @DisplayName("Пустой или пробельный исполнитель в команде сохраняется как «не указан»")
     void shouldStoreBlankAssigneeAsNull(String assignee) {
-        var out = kafkaStep.startListening(TestConfig.getKafkaTopicOut());
+        var out = kafkaStep.startListening(props.kafka().topicOut());
         String messageId = UUID.randomUUID().toString();
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.assignee(assignee));
 
@@ -83,7 +82,7 @@ class TaskCommandsKafkaTests extends TestBase {
     @Test
     @DisplayName("Повторная доставка команды с тем же messageId не создаёт вторую задачу и второе событие")
     void shouldIgnoreRepeatedCommand() {
-        var out = kafkaStep.startListening(TestConfig.getKafkaTopicOut());
+        var out = kafkaStep.startListening(props.kafka().topicOut());
         String messageId = UUID.randomUUID().toString();
         var request = TaskDataFactory.defaultTaskRequestDTO();
 
@@ -105,9 +104,9 @@ class TaskCommandsKafkaTests extends TestBase {
     @DisplayName("Некорректная команда уходит в task_in_dlq с причиной и не создаёт задачу")
     void shouldMoveInvalidCommandToDeadLetterTopic(String caseName, String payload,
                                                    String expectedError, String title) {
-        var dlq = kafkaStep.startListening(TestConfig.getKafkaTopicInDlq());
+        var dlq = kafkaStep.startListening(props.kafka().topicInDlq());
 
-        kafkaStep.send(TestConfig.getKafkaTopicIn(), null, payload);
+        kafkaStep.send(props.kafka().topicIn(), null, payload);
 
         DeadLetterMessage message = kafkaStep.awaitDeadLetter(dlq, payload);
         kafkaStep.checkDeadLetter(message, payload, expectedError);

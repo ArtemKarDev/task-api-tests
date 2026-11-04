@@ -4,12 +4,10 @@ import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.learning.taskapitests.TestBase;
-import ru.learning.taskapitests.config.TestConfig;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.steps.ui.NavigationUiSteps;
 import ru.learning.taskapitests.steps.ui.TaskUiSteps;
@@ -27,21 +25,23 @@ public class UiTestBase extends TestBase {
     @Autowired
     protected NavigationUiSteps navStep;
 
-    @BeforeAll
-    public static void configureSelenide() {
-        Configuration.baseUrl = TestConfig.getBaseUrl();
-        Configuration.browser = TestConfig.getBrowser();
-        Configuration.headless = TestConfig.isHeadless();
-        Configuration.browserSize = TestConfig.getBrowserSize();
-        Configuration.timeout = TestConfig.getUiTimeoutMs();
+    @BeforeEach
+    protected void configureSelenide() {
+        var browser = props.browser();
 
+        Configuration.baseUrl = props.baseUrl();
+        Configuration.browser = browser.name();
+        Configuration.headless = browser.headless();
+        Configuration.browserSize = browser.size();
+        Configuration.timeout = browser.timeoutMs();
+
+        // Скриншоты и исходник страницы при падении прикрепляет Allure-слушатель и расширение,
+        // собственное сохранение Selenide отключаем, чтобы не плодить дубли файлов
         Configuration.screenshots = false;
         Configuration.savePageSource = false;
 
-        Configuration.fastSetValue = true;
-
-        String remoteUrl = TestConfig.getRemoteUrl();
-        if (remoteUrl != null) {
+        String remoteUrl = browser.remoteUrl();
+        if (remoteUrl != null && !remoteUrl.isBlank()) {
             Configuration.remote = remoteUrl;
         }
     }
