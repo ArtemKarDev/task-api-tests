@@ -14,7 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Component
 public class DbSteps {
 
-    private final TaskRepository taskRepository = new TaskRepository();
+    private final TaskRepository taskRepository;
+
+    public DbSteps(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
 
 
     @Step("Получить количество задач в БД")

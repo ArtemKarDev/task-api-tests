@@ -1,12 +1,21 @@
 package ru.learning.taskapitests.db;
 
+import org.springframework.stereotype.Component;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
+@Component
 public class TaskRepository {
+
+    private final DbClient dbClient;
+
+    public TaskRepository(DbClient dbClient){
+        this.dbClient = dbClient;
+    }
     public TaskDbRecord findById(long taskId) throws SQLException {
         String sql = """
                 SELECT id, title, description, status , priority , assignee
@@ -14,7 +23,7 @@ public class TaskRepository {
                 WHERE id = ?                
                 """;
 
-        try (Connection connection = DbClient.getConnection();
+        try (Connection connection = dbClient.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, taskId);
 
@@ -38,7 +47,7 @@ public class TaskRepository {
     public long countAll() throws SQLException {
         String sql = "SELECT count(*) FROM tasks";
 
-        try (Connection connection = DbClient.getConnection();
+        try (Connection connection = dbClient.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
             resultSet.next();
@@ -49,7 +58,7 @@ public class TaskRepository {
     public long countByTitle(String title) throws SQLException {
         String sql = "SELECT count(*) FROM tasks WHERE title = ?";
 
-        try (Connection connection = DbClient.getConnection();
+        try (Connection connection = dbClient.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, title);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -62,7 +71,7 @@ public class TaskRepository {
     public long countProcessedMessages(UUID messageId) throws SQLException {
         String sql = "SELECT count(*) FROM processed_messages WHERE message_id = ?";
 
-        try (Connection connection = DbClient.getConnection();
+        try (Connection connection = dbClient.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setObject(1, messageId);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -76,7 +85,7 @@ public class TaskRepository {
     public Long findTaskIdByMessage(UUID messageId) throws SQLException {
         String sql = "SELECT task_id FROM processed_messages WHERE message_id = ?";
 
-        try (Connection connection = DbClient.getConnection();
+        try (Connection connection = dbClient.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setObject(1, messageId);
             try (ResultSet resultSet = statement.executeQuery()) {

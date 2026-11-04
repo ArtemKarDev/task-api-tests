@@ -6,7 +6,7 @@ import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import ru.learning.taskapitests.config.TestConfig;
+import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.kafka.DeadLetterMessage;
 import ru.learning.taskapitests.kafka.KafkaProducerClient;
@@ -17,19 +17,23 @@ import ru.learning.taskapitests.utils.JsonUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Шаги работы с Kafka. Соединения создаются по требованию и закрываются методом close() после теста. */
+/**
+ * Шаги работы с Kafka. Соединения создаются по требованию и закрываются методом close() после теста.
+ */
 
 @Component
 @Scope("prototype")
 public class KafkaSteps implements AutoCloseable {
+
+    private final TestProperties props;
+
+    public KafkaSteps(TestProperties props) {
+        this.props = props;
+    }
 
     private static final Duration EVENT_TIMEOUT = Duration.ofSeconds(20);
     // Строгий разбор: неизвестное поле в событии вызывает ошибку (так проверяется контракт события)
@@ -40,7 +44,7 @@ public class KafkaSteps implements AutoCloseable {
 
     @Step("Начать читать топик {topic} с текущего конца")
     public TopicListener startListening(String topic) {
-        TopicListener listener = new TopicListener(TestConfig.getKafkaBootstrapServers(), topic);
+        TopicListener listener = new TopicListener(props.kafka().bootstrapServers(), topic);
         resources.add(listener);
         return listener;
     }
@@ -53,7 +57,7 @@ public class KafkaSteps implements AutoCloseable {
 
     @Step("Отправить команду создания задачи в task_in, messageId = {messageId}")
     public void sendCreateCommand(String messageId, CreateTaskRequest request) {
-        send(TestConfig.getKafkaTopicIn(), null, JsonUtils.toJson(commandBody(messageId, request)));
+        send(props.kafka().topicIn(), null, JsonUtils.toJson(commandBody(messageId, request)));
     }
 
     @Step("Дождаться события {eventType} для задачи {taskId}")
@@ -140,7 +144,7 @@ public class KafkaSteps implements AutoCloseable {
 
     private KafkaProducerClient producer() {
         if (producer == null) {
-            producer = new KafkaProducerClient(TestConfig.getKafkaBootstrapServers());
+            producer = new KafkaProducerClient(props.kafka().bootstrapServers());
         }
         return producer;
     }
