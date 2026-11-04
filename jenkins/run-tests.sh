@@ -4,7 +4,7 @@ cd /workspace
 REMOTE_URL="${TESTS_BROWSER_REMOTEURL:-}"
 
 # Если задан удалённый браузер, ждём, пока Selenium будет готов принимать сессии
-if [ -n ${REMOTE_URL}" ]; then
+if [ -n "${REMOTE_URL}" ]; then
   STATUS_URL="${REMOTE_URL%/wd/hub}/status"
   echo "Ожидание браузера: $STATUS_URL"
   for i in $(seq 1 60); do
