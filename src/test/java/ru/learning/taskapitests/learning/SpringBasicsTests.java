@@ -51,10 +51,6 @@ class SpringBasicsTests {
         Greeter greeter() {
             return new Greeter("Hello");
         }
-        @Bean
-        Greeter greeter2() {
-            return new Greeter("Hi");
-        }
 
         @Bean
         Welcome welcome(Greeter greeter) {      // Spring сам подставит готовый greeter
