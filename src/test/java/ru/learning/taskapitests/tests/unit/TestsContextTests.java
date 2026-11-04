@@ -1,5 +1,6 @@
-package ru.learning.taskapitests.config;
+package ru.learning.taskapitests.tests.unit;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.client.TaskApiClient;
+import ru.learning.taskapitests.config.TestProperties;
+import ru.learning.taskapitests.config.TestsConfig;
 import ru.learning.taskapitests.steps.CreatedTasksRegistry;
 import ru.learning.taskapitests.steps.DbSteps;
 import ru.learning.taskapitests.steps.KafkaSteps;
@@ -33,7 +36,7 @@ class TestsContextTests {
         assertThat(context.getBean(NavigationUiSteps.class)).isNotNull();
         assertThat(context.getBean(TaskUiSteps.class)).isNotNull();
         assertThat(context.getBean(CreatedTasksRegistry.class)).isNotNull();
-        assertThat(context.getBean(TestProperties.class)).isNotNull();
+        Assertions.assertThat(context.getBean(TestProperties.class)).isNotNull();
     }
 
     @Test

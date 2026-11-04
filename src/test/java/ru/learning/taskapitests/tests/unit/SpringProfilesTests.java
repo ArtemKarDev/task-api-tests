@@ -1,4 +1,4 @@
-package ru.learning.taskapitests.config;
+package ru.learning.taskapitests.tests.unit;
 
 
 import org.junit.jupiter.api.DisplayName;
@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import ru.learning.taskapitests.Tags;
+import ru.learning.taskapitests.config.SettingsConfig;
+import ru.learning.taskapitests.config.TestProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
