@@ -19,8 +19,8 @@ pipeline {
                     booleanParam(name: 'RESET_DATA', value: false),
                     booleanParam(name: 'BACKUP', value: false),
                     string(name: 'TESTS', value: 'smoke'),
-                    string(name: 'BROWSER', value: 'chrome')
-                    string(name: 'TRIGGER', value: 'auto: tests changed'),
+                    string(name: 'BROWSER', value: 'chrome'),
+                    string(name: 'TRIGGER', value: 'auto: tests changed')
                 ]
             }
         }
