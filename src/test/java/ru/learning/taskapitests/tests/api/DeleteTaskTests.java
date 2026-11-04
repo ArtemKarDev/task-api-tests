@@ -11,7 +11,7 @@ import ru.learning.taskapitests.data.TaskDataFactory;
 @Tag(Tags.REGRESSION)
 @Tag(Tags.API)
 @DisplayName("Запросы удаленя задач")
-public class DeleteTaskTest extends TestBase {
+public class DeleteTaskTests extends TestBase {
 
     @Tag(Tags.SMOKE)
     @DisplayName("Запрос удаления задачи по ID и её получения")

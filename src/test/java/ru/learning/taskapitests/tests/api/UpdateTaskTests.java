@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag(Tags.REGRESSION)
 @Tag(Tags.API)
 @DisplayName("Запросы обновления задач")
-public class UpdateTaskTest extends TestBase {
+public class UpdateTaskTests extends TestBase {
 
     @Tag(Tags.SMOKE)
     @DisplayName("Запрос на обновление всех атрибутов задачи")

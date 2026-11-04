@@ -1,4 +1,4 @@
-package ru.learning.taskapitests.config;
+package ru.learning.taskapitests.tests.unit;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -13,6 +13,8 @@ import org.springframework.boot.context.properties.source.ConfigurationPropertyS
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;                                            // НОВОЕ
 import ru.learning.taskapitests.Tags;
+import ru.learning.taskapitests.config.SettingsConfig;
+import ru.learning.taskapitests.config.TestProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
