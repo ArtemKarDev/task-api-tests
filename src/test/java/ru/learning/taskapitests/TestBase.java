@@ -4,6 +4,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.learning.taskapitests.auth.TokenProvider;
+import ru.learning.taskapitests.client.AuthApiClient;
 import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.config.TestsConfig;
@@ -24,12 +26,16 @@ public class TestBase {
     protected KafkaSteps kafkaStep;
     @Autowired
     protected TestProperties props;
+    @Autowired
+    protected TokenProvider tokenProvider;
+    @Autowired
+    protected AuthApiClient authApi;
 
     @BeforeEach
     protected void setUp() {
+        tokenProvider.reset();
         step.clearTaskIdInCreatedList();
     }
-
 
     @AfterEach
     protected void cleanUp() {

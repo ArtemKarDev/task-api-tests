@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import(SettingsConfig.class)
 @ComponentScan(basePackages = {
+        "ru.learning.taskapitests.auth",
         "ru.learning.taskapitests.client",
         "ru.learning.taskapitests.db",
         "ru.learning.taskapitests.specs",

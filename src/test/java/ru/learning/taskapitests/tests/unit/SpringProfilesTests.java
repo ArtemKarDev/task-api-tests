@@ -29,12 +29,25 @@ public class SpringProfilesTests {
 
         @Test
         @DisplayName("Значения стенда local, пароль берётся из файла профиля")
-        void shouldUseLocalValues(){
+        void shouldUseLocalValues() {
             assertThat(props.baseUrl()).isEqualTo("http://localhost:8080");
             assertThat(props.db().url()).isEqualTo("jdbc:postgresql://localhost:5433/taskdb");
             assertThat(props.db().user()).isEqualTo("taskuser");
             assertThat(props.db().password()).isEqualTo("local_dev_password");
             assertThat(props.kafka().bootstrapServers()).isEqualTo("localhost:9092");
+        }
+
+        @Test
+        @DisplayName("Значения пользователей стенда local, пароль берётся из файла профиля")
+        void shouldUseLocalValuesUserCredentials() {
+            assertThat(props.auth())
+                    .as("ветка tests.auth не попала в настройки").isNotNull();
+            assertThat(props.auth().user().username()).isEqualTo("user");
+            assertThat(props.auth().user().password())
+                    .as("Пароль user для local (application-local.yml)").isEqualTo("local_user_password");
+            assertThat(props.auth().admin().username()).isEqualTo("admin");
+            assertThat(props.auth().admin().password())
+                    .as("Пароль admin для local (application-local.yml)").isEqualTo("local_admin_password");
         }
     }
 
@@ -58,6 +71,21 @@ public class SpringProfilesTests {
                     .isEqualTo(System.getenv("TESTS_DB_PASSWORD"));
             assertThat(props.kafka().bootstrapServers()).isEqualTo("localhost:9192");
         }
+
+        @Test
+        @DisplayName("Значения пользователей стенда dev, пароль берётся из переменной окружения")
+        void shouldUseDevValuesUserCredentials() {
+            assertThat(props.auth()).isNotNull();
+            assertThat(props.auth().user().username()).isEqualTo("user");
+            assertThat(props.auth().user().password())
+                    .as("Пароль dev не хранится в файлах: он приходит из TESTS_AUTH_USER_PASSWORD")
+                    .isEqualTo(System.getenv("TESTS_AUTH_USER_PASSWORD"));
+            assertThat(props.auth().admin().username()).isEqualTo("admin");
+            assertThat(props.auth().admin().password())
+                    .as("Пароль dev не хранится в файлах: он приходит из TESTS_AUTH_ADMIN_PASSWORD")
+                    .isEqualTo(System.getenv("TESTS_AUTH_ADMIN_PASSWORD"));
+        }
+
     }
 
     @Nested
@@ -79,6 +107,20 @@ public class SpringProfilesTests {
                     .as("Пароль stage не хранится в файлах: он приходит из TESTS_DB_PASSWORD")
                     .isEqualTo(System.getenv("TESTS_DB_PASSWORD"));
             assertThat(props.kafka().bootstrapServers()).isEqualTo("localhost:9292");
+        }
+
+        @Test
+        @DisplayName("Значения пользователей стенда stage, пароль берётся из переменной окружения")
+        void shouldUseStageValuesUserCredentials() {
+            assertThat(props.auth()).isNotNull();
+            assertThat(props.auth().user().username()).isEqualTo("user");
+            assertThat(props.auth().user().password())
+                    .as("Пароль stage не хранится в файлах: он приходит из TESTS_AUTH_USER_PASSWORD")
+                    .isEqualTo(System.getenv("TESTS_AUTH_USER_PASSWORD"));
+            assertThat(props.auth().admin().username()).isEqualTo("admin");
+            assertThat(props.auth().admin().password())
+                    .as("Пароль stage не хранится в файлах: он приходит из TESTS_AUTH_ADMIN_PASSWORD")
+                    .isEqualTo(System.getenv("TESTS_AUTH_ADMIN_PASSWORD"));
         }
     }
 }

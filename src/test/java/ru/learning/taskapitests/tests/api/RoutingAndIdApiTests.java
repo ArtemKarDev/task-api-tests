@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
+import ru.learning.taskapitests.auth.Role;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -27,13 +28,17 @@ class RoutingAndIdApiTests extends TestBase {
     private static final String VALID_BODY = "{\"title\":\"x\",\"status\":\"NEW\",\"priority\":\"LOW\"}";
     private static final List<String> ID_METHODS = List.of("GET", "PUT", "PATCH", "DELETE");
 
+    // тесты проверяют адреса и идентификаторы, а не права,
+    // поэтому вызываем от роли, которой права не мешают
+    public static final Role CALLER = Role.ADMIN;
+
     @ParameterizedTest(name = "{0} /api/tasks/{1}")
     @MethodSource("methodsAndInvalidIds")
     @DisplayName("ID не число или не помещается в long: 400 с описанием параметра")
     void shouldRejectInvalidId(String method, String id) {
         String path = "/api/tasks/" + id;
 
-        Response response = step.sendRequest(method, path, JSON, bodyFor(method));
+        Response response = step.sendRequest(CALLER, method, path, JSON, bodyFor(method));
 
         step.checkApiErrorWithDetails(response, 400, "Invalid request parameter", path,
                 "id: invalid value '" + id + "'");
@@ -45,7 +50,7 @@ class RoutingAndIdApiTests extends TestBase {
     void shouldReturn404ForNonPositiveId(String method, String id) {
         String path = "/api/tasks/" + id;
 
-        Response response = step.sendRequest(method, path, JSON, bodyFor(method));
+        Response response = step.sendRequest(CALLER, method, path, JSON, bodyFor(method));
 
         step.checkApiError(response, 404, "Task not found with id: " + id, path);
     }
@@ -58,7 +63,7 @@ class RoutingAndIdApiTests extends TestBase {
     })
     @DisplayName("Неизвестный адрес API: 404 в едином формате")
     void shouldReturn404ForUnknownAddress(String path) {
-        Response response = step.sendRequest("GET", path, JSON, null);
+        Response response = step.sendRequest(CALLER, "GET", path, JSON, null);
 
         step.checkApiError(response, 404, "Resource not found", path);
     }
@@ -67,7 +72,7 @@ class RoutingAndIdApiTests extends TestBase {
     @MethodSource("notAllowedMethods")
     @DisplayName("Метод не поддерживается адресом: 405 и заголовок Allow")
     void shouldReturn405ForWrongMethod(String method, String path, List<String> allowedMethods) {
-        Response response = step.sendRequest(method, path, JSON, bodyFor(method));
+        Response response = step.sendRequest(CALLER, method, path, JSON, bodyFor(method));
 
         step.checkApiError(response, 405, "Method Not Allowed", path);
         step.checkHeaderContains(response, "Allow", allowedMethods);
@@ -76,7 +81,7 @@ class RoutingAndIdApiTests extends TestBase {
     @Test
     @DisplayName("Тело не в формате JSON: 415")
     void shouldReturn415ForNonJsonBody() {
-        Response response = step.sendRequest("POST", "/api/tasks", "text/plain", "hello");
+        Response response = step.sendRequest(CALLER, "POST", "/api/tasks", "text/plain", "hello");
 
         step.checkApiError(response, 415, "Unsupported Media Type", "/api/tasks");
     }

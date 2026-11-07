@@ -4,6 +4,7 @@ import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
+import ru.learning.taskapitests.auth.Role;
 import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
@@ -64,9 +65,6 @@ public class TaskApiClient {
                 .post(POST_TASK_CREATE);
 
         attachResponseDetails(response);
-
-//        log.info("\n************ Статус код: {}\n", response.statusCode());
-//        log.info("\n************ Body: {}\n", response.body().asPrettyString());
 
         return response;
     }
@@ -132,7 +130,7 @@ public class TaskApiClient {
     @Step("Удалить задачу по Id: : {taskId}")
     public Response deleteTask(long taskId) {
         Response response = given()
-                .spec(apiSpec.requestSpec())
+                .spec(apiSpec.requestSpec(Role.ADMIN))
                 .when()
                 .delete("/api/tasks/{id}", taskId);
 
@@ -141,13 +139,17 @@ public class TaskApiClient {
         return response;
     }
 
-    @Step("Выполнить запрос {method} {path}")
     public Response sendRaw(String method, String path, String contentType, String body) {
+        return sendRaw(Role.USER, method, path, contentType, body);
+    }
+
+    @Step("Выполнить запрос {method} {path} от имени {role}")
+    public Response sendRaw(Role role, String method, String path, String contentType, String body) {
         if (body != null) {
             AllureAttachments.attachRequest(body);
         }
 
-        RequestSpecification request = given().spec(apiSpec.requestSpec());
+        RequestSpecification request = given().spec(apiSpec.requestSpec(role));
         if (contentType != null) {
             request.contentType(contentType);
         }
@@ -159,6 +161,7 @@ public class TaskApiClient {
         attachResponseDetails(response);
         return response;
     }
+
 
 }
 

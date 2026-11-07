@@ -1,3 +1,8 @@
 tests:
   db:
     password: local_dev_password
+  auth:
+    user:
+      password: local_user_password
+    admin:
+      password: local_admin_password
