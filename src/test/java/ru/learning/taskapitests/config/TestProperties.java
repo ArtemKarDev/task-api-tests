@@ -23,4 +23,5 @@ public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka
     public record Account(String username, String password) {
     }
 
+
 }

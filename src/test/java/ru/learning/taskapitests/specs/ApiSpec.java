@@ -39,10 +39,10 @@ public class ApiSpec {
         return requestSpecWithToken(tokenProvider.tokenFor(role));
     }
 
+
     public RequestSpecification requestSpecWithToken(String token) {
         return baseRequestSpec()
                 .auth().oauth2(token);
-//                .header("Authorization", "Bearer " + token);
     }
 
     public RequestSpecification requestSpecAnonymous() {

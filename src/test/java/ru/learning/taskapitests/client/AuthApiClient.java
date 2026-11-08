@@ -1,22 +1,20 @@
 package ru.learning.taskapitests.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.generated.model.LoginRequest;
 import ru.learning.taskapitests.utils.AllureAttachments;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.port;
 
 
 @Component
 public class AuthApiClient {
-
+    public static final String LOGIN_PATH = "/api/auth/login";
     private final TestProperties props;
 
     public AuthApiClient(TestProperties props) {
@@ -26,16 +24,30 @@ public class AuthApiClient {
     @Step("Войти как {username}")
     public Response login(String username, String password) {
 
-        LoginRequest request = new LoginRequest().username(username).password(password);
+        LoginRequest requestBody = new LoginRequest().username(username).password(password);
 
-        Response response = given()
+        return postLogin(requestBody);
+    }
+
+    @Step("Отправить «сырой» запрос на вход")
+    public Response loginRaw(String body) {
+        return postLogin(body);
+    }
+
+    private Response postLogin(Object body) {
+        RequestSpecification requestSpec = given()
                 .baseUri(props.baseUrl())
-                .contentType(ContentType.JSON)
-                .body(request)
-                .when()
-                .post("/api/auth/login");
-        attachResponseWithoutSecrets(response);
+                .contentType(ContentType.JSON);
 
+        if (body != null) {
+            requestSpec.body(body);
+        }
+
+        Response response = requestSpec
+                .when()
+                .post(LOGIN_PATH);
+
+        attachResponseWithoutSecrets(response);
         return response;
     }
 
@@ -49,5 +61,4 @@ public class AuthApiClient {
             }
         }
     }
-
 }

@@ -10,6 +10,7 @@ import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.generated.model.ApiErrorResponse;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
+import ru.learning.taskapitests.tests.ui.CreateTaskUiTests;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -28,12 +29,13 @@ public class TaskSteps {
 
     public static final Map<Integer, String> REASON_PHRASES = Map.of(
             400, "Bad Request",
+            401, "Unauthorized",
+            403, "Forbidden",
             404, "Not Found",
             405, "Method Not Allowed",
             409, "Conflict",
             415, "Unsupported Media Type",
             500, "Internal Server Error");
-
 
     public TaskSteps(TaskApiClient taskApi, CreatedTasksRegistry registry) {
         this.taskApi = taskApi;
@@ -185,6 +187,16 @@ public class TaskSteps {
     @Step("Отправить запрос {method} {path} от имени {role}")
     public Response sendRequest(Role role, String method, String path, String contentType, String body) {
         return taskApi.sendRaw(role, method, path, contentType, body);
+    }
+
+    @Step("Отправить запрос {method} {path} без токена")
+    public Response sendRequestAnonymous(String method, String path, String contentType, String body) {
+        return taskApi.sendRawAnonymous(method, path, contentType, body);
+    }
+
+    @Step("Отправить запрос {method} {path} с переданным токеном")
+    public Response sendRequestWithToken(String token, String method, String path, String contentType, String body) {
+        return taskApi.sendRawWithToken(token, method, path, contentType, body);
     }
 
     @Step("Проверить заголовок {header}: содержит {expectedValues}")

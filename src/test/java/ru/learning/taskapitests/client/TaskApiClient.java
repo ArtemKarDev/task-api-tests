@@ -145,11 +145,25 @@ public class TaskApiClient {
 
     @Step("Выполнить запрос {method} {path} от имени {role}")
     public Response sendRaw(Role role, String method, String path, String contentType, String body) {
+        return send(apiSpec.requestSpec(role), method, path, contentType, body);
+    }
+
+    @Step("Выполнить запрос {method} {path} без токена")
+    public Response sendRawAnonymous(String method, String path, String contentType, String body) {
+        return send(apiSpec.requestSpecAnonymous(), method, path, contentType, body);
+    }
+
+    @Step("Выполнить запрос {method} {path} с переданным токеном")
+    public Response sendRawWithToken(String token, String method, String path, String contentType, String body) {
+        return send(apiSpec.requestSpecWithToken(token), method, path, contentType, body);
+    }
+
+    private Response send(RequestSpecification spec, String method, String path, String contentType, String body) {
         if (body != null) {
             AllureAttachments.attachRequest(body);
         }
 
-        RequestSpecification request = given().spec(apiSpec.requestSpec(role));
+        RequestSpecification request = given().spec(spec);
         if (contentType != null) {
             request.contentType(contentType);
         }
@@ -159,10 +173,9 @@ public class TaskApiClient {
 
         Response response = request.when().request(method, path);
         attachResponseDetails(response);
+
         return response;
     }
-
-
 }
 
 
