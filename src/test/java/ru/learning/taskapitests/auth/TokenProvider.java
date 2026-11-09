@@ -2,6 +2,7 @@ package ru.learning.taskapitests.auth;
 
 import io.restassured.http.ContentType;
 import org.springframework.stereotype.Component;
+import ru.learning.taskapitests.client.AuthApiClient;
 import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.generated.model.LoginRequest;
 
@@ -13,12 +14,10 @@ import static io.restassured.RestAssured.given;
 @Component
 public class TokenProvider {
 
-
     private final TestProperties props;
 
-    //    Не потокобезопасно: годится, пока тесты идут по очереди;
-    //    при параллельном запуске заменить на хранение по потокам
-    private final Map<Role, String> tokens = new EnumMap<>(Role.class);
+    // Токены хранятся по потокам: параллельные тесты не делят словарь и не стирают токены друг друга
+    private final ThreadLocal<Map<Role, String>> tokens = ThreadLocal.withInitial(() -> new EnumMap<>(Role.class));
 
     public TokenProvider(TestProperties props) {
         this.props = props;
@@ -37,7 +36,7 @@ public class TokenProvider {
                 .contentType(ContentType.JSON)
                 .body(login)
                 .when()
-                .post("/api/auth/login")
+                .post(AuthApiClient.LOGIN_PATH)
                 .then().statusCode(200).extract().path("accessToken");
     }
 
@@ -48,13 +47,12 @@ public class TokenProvider {
         };
     }
 
-
     public String tokenFor(Role role) {
-        return tokens.computeIfAbsent(role, this::login);
+        return tokens.get().computeIfAbsent(role, this::login);
     }
 
     public void reset() {
-        tokens.clear();
+        tokens.remove();
     }
 
 }

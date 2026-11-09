@@ -10,7 +10,6 @@ import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.generated.model.ApiErrorResponse;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
-import ru.learning.taskapitests.tests.ui.CreateTaskUiTests;
 
 import java.time.Duration;
 import java.time.Instant;

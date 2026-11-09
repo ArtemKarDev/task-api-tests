@@ -46,7 +46,6 @@ public class AuthApiClient {
         Response response = requestSpec
                 .when()
                 .post(LOGIN_PATH);
-
         attachResponseWithoutSecrets(response);
         return response;
     }

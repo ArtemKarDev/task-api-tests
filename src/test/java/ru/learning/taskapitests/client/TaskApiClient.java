@@ -19,7 +19,7 @@ public class TaskApiClient {
 
     private static final String POST_TASK_CREATE = "/api/tasks";
     private static final String GET_TASK = "/api/tasks";
-    private static final String UPDATE_TASK = "/api/tasks";
+    private static final String BASE_PATH = "/api/tasks";
     private static final String PATCH_TASK = "/api/tasks";
     private static final String DELETE_TASK = "/api/tasks";
 
@@ -47,7 +47,7 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .post(POST_TASK_CREATE);
+                .post(BASE_PATH);
 
         attachResponseDetails(response);
         return response;
@@ -62,7 +62,7 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(request)
                 .when()
-                .post(POST_TASK_CREATE);
+                .post(BASE_PATH);
 
         attachResponseDetails(response);
 
@@ -88,7 +88,7 @@ public class TaskApiClient {
         Response response = given()
                 .spec(apiSpec.requestSpec())
                 .when()
-                .get(GET_TASK + "/{id}", taskId);
+                .get(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
         return response.as(Task.class);
@@ -104,7 +104,7 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .put("/api/tasks/{id}", taskId);
+                .put(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
 
@@ -120,7 +120,7 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .patch("/api/tasks/{id}", taskId);
+                .patch(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
 
@@ -132,7 +132,7 @@ public class TaskApiClient {
         Response response = given()
                 .spec(apiSpec.requestSpec(Role.ADMIN))
                 .when()
-                .delete("/api/tasks/{id}", taskId);
+                .delete(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
 

@@ -6,6 +6,8 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
@@ -17,6 +19,7 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Execution(ExecutionMode.CONCURRENT)
 @Tag(Tags.KAFKA)
 @Tag(Tags.REGRESSION)
 @Epic("Kafka")

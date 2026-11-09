@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 @Tag(Tags.NEGATIVE)
 @Epic("Авторизация")
 @Feature("Защита API")
-@DisplayName("Авторизация с получением токена")
+@DisplayName("Проверки работы защиты при невалидных запросах")
 public class SecurityApiTests extends TestBase {
 
     private static final String MISSING_ID = "999999999";

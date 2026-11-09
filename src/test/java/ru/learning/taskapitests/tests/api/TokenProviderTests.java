@@ -14,6 +14,10 @@ import ru.learning.taskapitests.auth.Role;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -81,5 +85,30 @@ public class TokenProviderTests extends TestBase {
 
     }
 
+    @Test
+    @DisplayName("Токены разных потоков изолированы: reset() в одном потоке не затрагивает другой")
+    void shouldKeepTokensIsolatedBetweenThreads() throws Exception {
+        tokenProvider.reset();
+        String mainToken = tokenProvider.tokenFor(Role.USER);
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        String otherThreadToken;
+        try {
+            otherThreadToken = executor.submit(() -> {
+                String token = tokenProvider.tokenFor(Role.USER);
+                tokenProvider.reset();
+                return token;
+            }).get(10, TimeUnit.SECONDS);
+        } finally {
+            executor.shutdownNow();
+        }
+
+        assertThat(tokenProvider.tokenFor(Role.USER))
+                .as("Токен потока теста сохранился после reset() в другом потоке")
+                .isSameAs(mainToken);
+        assertThat(otherThreadToken)
+                .as("Второй поток вошёл сам и получил свой токен")
+                .isNotSameAs(mainToken);
+    }
 
 }

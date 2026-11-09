@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.learning.taskapitests.auth.TokenProvider;
+import ru.learning.taskapitests.client.AdminApiClient;
 import ru.learning.taskapitests.client.AuthApiClient;
 import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.config.TestProperties;
@@ -30,6 +31,8 @@ public class TestBase {
     protected TokenProvider tokenProvider;
     @Autowired
     protected AuthApiClient authApi;
+    @Autowired
+    protected AdminApiClient adminApi;
 
     @BeforeEach
     protected void setUp() {
