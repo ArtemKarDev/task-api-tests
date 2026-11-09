@@ -15,6 +15,8 @@ import ru.learning.taskapitests.ApiTest;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.auth.Role;
 import ru.learning.taskapitests.client.AuthApiClient;
+import ru.learning.taskapitests.data.TestUser;
+import ru.learning.taskapitests.extensions.WithUser;
 import ru.learning.taskapitests.generated.model.CreateUserRequest;
 import ru.learning.taskapitests.generated.model.TokenResponse;
 import ru.learning.taskapitests.generated.model.UpdateUserRequest;
@@ -74,7 +76,7 @@ public class AdminUsersApiTests extends TestBase {
     @DisplayName("Созданный пользователь получает права своей роли")
     void shouldApplyRolePermissionsToCreatedUser(Role role, int expectedStatus) {
         UserResponse user = createUser(role);
-        String token = loginAndGetToken(user.getUsername());
+        String token = loginAndGetToken(user.getUsername(),PASSWORD);
 
         Response response = step.sendRequestWithToken(token, "GET", ADMIN_USERS_PATH, JSON, null);
 
@@ -82,17 +84,18 @@ public class AdminUsersApiTests extends TestBase {
     }
 
     @Test
+    @WithUser
     @DisplayName("Отключённый пользователь теряет доступ сразу")
-    void shouldLoseAccessImmediatelyAfterDisable() {
-        UserResponse user = createUser(Role.USER);
-        String token = loginAndGetToken(user.getUsername());
+    void shouldLoseAccessImmediatelyAfterDisable(TestUser user) {
+
+        String token = loginAndGetToken(user.username(), user.password());
 
         checkTokenAccepted(token);
 
-        disableUser(user.getId());
+        disableUser(user.id());
 
         checkTokenRejected(token);
-        checkLoginRejected(user.getUsername());
+        checkLoginRejected(user.username());
     }
 
     @Step("Создать пользователя с ролью {role}")
@@ -118,8 +121,8 @@ public class AdminUsersApiTests extends TestBase {
     }
 
     @Step("Войти как {username} и получить токен")
-    private String loginAndGetToken(String username) {
-        Response response = authApi.login(username, PASSWORD);
+    private String loginAndGetToken(String username, String password) {
+        Response response = authApi.login(username, password);
         step.checkStatus(response, 200);
         return response.as(TokenResponse.class).getAccessToken();
     }
