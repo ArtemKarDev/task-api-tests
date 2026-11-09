@@ -1,16 +1,19 @@
 package ru.learning.taskapitests.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.auth.Role;
 import ru.learning.taskapitests.config.TestProperties;
+import ru.learning.taskapitests.generated.model.PatchTaskRequest;
 import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
 import ru.learning.taskapitests.utils.AllureAttachments;
 import ru.learning.taskapitests.utils.JsonUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static io.restassured.RestAssured.given;
 
@@ -24,9 +27,11 @@ public class TaskApiClient {
     private static final String DELETE_TASK = "/api/tasks";
 
     private final ApiSpec apiSpec;
+    private ObjectMapper objectMapper = null;
 
-    public TaskApiClient(ApiSpec apiSpec) {
+    public TaskApiClient(ApiSpec apiSpec, ObjectMapper objectMapper) {
         this.apiSpec = apiSpec;
+        this.objectMapper = objectMapper;
     }
 
     private void attachResponseDetails(Response response) {
@@ -126,6 +131,21 @@ public class TaskApiClient {
 
         return response;
     }
+
+    @Step("Обновить задачу частично по Id: {taskId}")
+    public Response patchTaskDto(long taskId, PatchTaskRequest request) {
+        return patchTask(taskId, toJson(request));
+    }
+
+    private String toJson(Object body) {
+        try {
+            return objectMapper.writeValueAsString(body);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Не удалось превратить тело запроса в JSON", e);
+        }
+    }
+
+
 
     @Step("Удалить задачу по Id: : {taskId}")
     public Response deleteTask(long taskId) {
