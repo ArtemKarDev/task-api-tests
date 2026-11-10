@@ -2,6 +2,7 @@ package ru.learning.taskapitests.ui.pages;
 
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
 
 import static com.codeborne.selenide.Selenide.$;
 
@@ -15,18 +16,34 @@ public class LoginPage extends BasePage {
     }
 
     public SelenideElement form() {
-        return $("[data-testid=login-form]");
+        return $("form[action$='/login']");
     }
 
     public SelenideElement usernameInput() {
-        return $("[data-testid=login-username]");
+        return form().$("#username");
     }
 
     public SelenideElement passwordInput() {
-        return $("[data-testid=login-password]");
+        return form().$("#password");
     }
 
     public SelenideElement submitButton() {
-        return $("[data-testid=login-submit]");
+        return form().$("button[type=submit]");
+    }
+
+    public SelenideElement errorMessage() {
+        return $(".err[role=alert]");
+    }
+
+    public SelenideElement logoutMessage() {
+        return $(".flash[role=status]");
+    }
+
+    @Step("Войти как {username}")
+    public TasksPage login(String username, String password) {
+        usernameInput().setValue(username);
+        passwordInput().setValue(password);
+        submitButton().click();
+        return new TasksPage();
     }
 }

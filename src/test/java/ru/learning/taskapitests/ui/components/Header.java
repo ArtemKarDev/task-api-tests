@@ -1,6 +1,7 @@
 package ru.learning.taskapitests.ui.components;
 
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
 import ru.learning.taskapitests.ui.pages.AboutPage;
 import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 import ru.learning.taskapitests.ui.pages.LoginPage;
@@ -32,6 +33,20 @@ public class Header {
         return root.$("a.login-link");
     }
 
+    public SelenideElement userName() {
+        return root.$(".user-box .user-name");
+    }
+
+    public SelenideElement logoutButton() {
+        return root.$("form[action$='/logout'] button[type=submit]");
+    }
+
+    @Step("Выйти из системы")
+    public LoginPage logout() {
+        logoutButton().click();
+        return new LoginPage();
+    }
+
     public SelenideElement activeLink() {
         return root.$("nav a.active");
     }
@@ -55,6 +70,7 @@ public class Header {
         createLink().click();
         return new CreateTaskPage();
     }
+
     public TasksPage goHome() {
         brand().click();
         return new TasksPage();
