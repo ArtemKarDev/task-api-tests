@@ -68,6 +68,8 @@ pipeline {
                       --network "${COMPOSE_PROJECT_NAME}_default" \
                       --network-alias selenium \
                       --shm-size=2g \
+                      -e SE_NODE_MAX_SESSIONS=4 \
+                      -e SE_NODE_OVERRIDE_MAX_SESSIONS=true \
                       "$IMAGE"
                 '''
             }
@@ -103,6 +105,8 @@ pipeline {
                       -e TESTS_DB_USER="$DB_USER" \
                       -e TESTS_DB_PASSWORD="$DB_PASSWORD" \
                       -e TESTS_KAFKA_BOOTSTRAPSERVERS="kafka:29092" \
+                      -e TESTS_AUTH_USER_PASSWORD="$APP_SECURITY_USER_PASSWORD" \
+                      -e TESTS_AUTH_ADMIN_PASSWORD="$APP_SECURITY_ADMIN_PASSWORD" \
                       $BROWSER_ARGS \
                       --entrypoint sh \
                       "$MAVEN_IMAGE" \

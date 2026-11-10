@@ -20,8 +20,8 @@ pipeline {
                     booleanParam(name: 'RESET_DATA', value: false),
                     booleanParam(name: 'BACKUP', value: false),
                     string(name: 'TESTS', value: 'regression'),
-                    string(name: 'BROWSER', value: 'chrome')
-                    string(name: 'TRIGGER', value: 'nightly regression'),
+                    string(name: 'BROWSER', value: 'chrome'),
+                    string(name: 'TRIGGER', value: 'nightly regression')
                 ]
             }
         }

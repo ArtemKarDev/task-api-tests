@@ -32,7 +32,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
 
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.title(title));
 
-        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
+        CreateTaskPage page = submitInvalidCreateForm(request, 1);
 
         uiStep.checkFieldError(page.form().titleError(), "Введите название задачи");
 
@@ -47,7 +47,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
 
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.assignee(assignee));
 
-        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
+        CreateTaskPage page = submitInvalidCreateForm(request, 1);
 
         uiStep.checkFieldError(page.form().assigneeError(), "Укажите исполнителя");
 
@@ -58,7 +58,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
     @DisplayName("Форма без приоритета не принимается")
     void shouldVisibleErrorCreateInvalidPriority() {
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.priority(null));
-        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
+        CreateTaskPage page = submitInvalidCreateForm(request, 1);
         uiStep.checkFieldError(page.form().priorityError(), "Выберите приоритет");
 
     }
@@ -67,7 +67,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
     @DisplayName("Форма без статуса не принимается")
     void shouldRejectMissingStatus() {
         var request = TaskDataFactory.customTaskRequestDTO(r -> r.status(null));
-        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
+        CreateTaskPage page = submitInvalidCreateForm(request, 1);
         uiStep.checkFieldError(page.form().statusError(), "Выберите статус");
     }
 
@@ -80,7 +80,7 @@ public class CreateTaskValidationUiTests extends UiTestBase {
             r.priority(null);
             r.status(null);
         });
-        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 3);
+        CreateTaskPage page = submitInvalidCreateForm(request, 3);
 
         uiStep.checkFieldError(page.form().titleError(), "Введите название задачи");
 //        uiStep.checkFieldError(page.form().assigneeError(), "Укажите исполнителя");

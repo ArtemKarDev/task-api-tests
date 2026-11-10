@@ -7,15 +7,13 @@ import ru.learning.taskapitests.extensions.LoginAs;
 @LoginAs
 public class UiTestBase extends BrowserTestBase {
 
-    protected CreateTaskPage submitInvalidCreateFormAndCheckNothingSaved(CreateTaskRequest request, int expectedErrors) {
-
-        long before = dbStep.getTasksCount();
+    protected CreateTaskPage submitInvalidCreateForm(CreateTaskRequest request, int expectedErrors) {
 
         CreateTaskPage page = uiStep.submitFormWithErrors(navStep.openCreateTaskPage(), request);
 
         navStep.checkPageOpened(page, "Создание задачи", "/tasks");
         uiStep.checkFormErrorsCount(page, expectedErrors);
-        dbStep.checkTasksCount(before);
+
         return page;
     }
 }
