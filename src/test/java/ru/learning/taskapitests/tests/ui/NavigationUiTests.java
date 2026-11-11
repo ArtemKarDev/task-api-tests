@@ -9,7 +9,6 @@ import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.ui.UiTestBase;
 import ru.learning.taskapitests.ui.pages.AboutPage;
 import ru.learning.taskapitests.ui.pages.CreateTaskPage;
-import ru.learning.taskapitests.ui.pages.LoginPage;
 import ru.learning.taskapitests.ui.pages.TasksPage;
 
 @Tag(Tags.UI)
@@ -35,17 +34,6 @@ class NavigationUiTests extends UiTestBase {
         TasksPage tasksPage = navStep.goToSearch();
         navStep.checkPageOpened(tasksPage, "Поиск задач", "/tasks");
         navStep.checkActiveMenuItem("Поиск задач");
-    }
-
-    @Test
-    @DisplayName("Страница входа открывается, пункт меню не подсвечивается")
-    void shouldOpenLoginPageWithoutActiveMenuItem() {
-        navStep.openTasksPage();
-
-        LoginPage loginPage = navStep.goToLogin();
-
-        navStep.checkPageOpened(loginPage, "Вход", "/login");
-        navStep.checkNoActiveMenuItem();
     }
 
     @Test

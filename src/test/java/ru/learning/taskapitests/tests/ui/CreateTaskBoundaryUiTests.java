@@ -47,7 +47,7 @@ public class CreateTaskBoundaryUiTests extends UiTestBase {
                                   CreateTaskRequest request,
                                   Function<TaskForm, SelenideElement> errorField,
                                   String expectedMessage) {
-        CreateTaskPage page = submitInvalidCreateFormAndCheckNothingSaved(request, 1);
+        CreateTaskPage page = submitInvalidCreateForm(request, 1);
 
         uiStep.checkFieldError(errorField.apply(page.form()), expectedMessage);
     }

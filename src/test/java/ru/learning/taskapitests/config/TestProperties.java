@@ -1,10 +1,13 @@
 package ru.learning.taskapitests.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import ru.learning.taskapitests.auth.Role;
 
-/** Настройки тестов. Значения Spring берёт из application.yml, переменных окружения и -D. */
+/**
+ * Настройки тестов. Значения Spring берёт из application.yml, переменных окружения и -D.
+ */
 @ConfigurationProperties(prefix = "tests")
-public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka) {
+public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka, Auth auth) {
 
     public record Db(String url, String user, String password) {
     }
@@ -14,4 +17,18 @@ public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka
 
     public record Kafka(String bootstrapServers, String topicIn, String topicInDlq, String topicOut) {
     }
+
+    public record Auth(Account user, Account admin) {
+        public Account accountFor(Role role) {
+            return switch (role) {
+                case USER -> user;
+                case ADMIN -> admin;
+            };
+        }
+    }
+
+    public record Account(String username, String password) {
+    }
+
+
 }

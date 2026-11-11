@@ -1,15 +1,19 @@
 package ru.learning.taskapitests.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
+import ru.learning.taskapitests.auth.Role;
 import ru.learning.taskapitests.config.TestProperties;
+import ru.learning.taskapitests.generated.model.PatchTaskRequest;
 import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
 import ru.learning.taskapitests.utils.AllureAttachments;
 import ru.learning.taskapitests.utils.JsonUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static io.restassured.RestAssured.given;
 
@@ -18,14 +22,16 @@ public class TaskApiClient {
 
     private static final String POST_TASK_CREATE = "/api/tasks";
     private static final String GET_TASK = "/api/tasks";
-    private static final String UPDATE_TASK = "/api/tasks";
+    private static final String BASE_PATH = "/api/tasks";
     private static final String PATCH_TASK = "/api/tasks";
     private static final String DELETE_TASK = "/api/tasks";
 
     private final ApiSpec apiSpec;
+    private ObjectMapper objectMapper = null;
 
-    public TaskApiClient(ApiSpec apiSpec) {
+    public TaskApiClient(ApiSpec apiSpec, ObjectMapper objectMapper) {
         this.apiSpec = apiSpec;
+        this.objectMapper = objectMapper;
     }
 
     private void attachResponseDetails(Response response) {
@@ -46,7 +52,7 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .post(POST_TASK_CREATE);
+                .post(BASE_PATH);
 
         attachResponseDetails(response);
         return response;
@@ -61,12 +67,9 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(request)
                 .when()
-                .post(POST_TASK_CREATE);
+                .post(BASE_PATH);
 
         attachResponseDetails(response);
-
-//        log.info("\n************ Статус код: {}\n", response.statusCode());
-//        log.info("\n************ Body: {}\n", response.body().asPrettyString());
 
         return response;
     }
@@ -90,7 +93,7 @@ public class TaskApiClient {
         Response response = given()
                 .spec(apiSpec.requestSpec())
                 .when()
-                .get(GET_TASK + "/{id}", taskId);
+                .get(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
         return response.as(Task.class);
@@ -106,7 +109,7 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .put("/api/tasks/{id}", taskId);
+                .put(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
 
@@ -122,32 +125,65 @@ public class TaskApiClient {
                 .spec(apiSpec.requestSpec())
                 .body(requestBody)
                 .when()
-                .patch("/api/tasks/{id}", taskId);
+                .patch(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
 
         return response;
     }
+
+    @Step("Обновить задачу частично по Id: {taskId}")
+    public Response patchTaskDto(long taskId, PatchTaskRequest request) {
+        return patchTask(taskId, toJson(request));
+    }
+
+    private String toJson(Object body) {
+        try {
+            return objectMapper.writeValueAsString(body);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Не удалось превратить тело запроса в JSON", e);
+        }
+    }
+
+
 
     @Step("Удалить задачу по Id: : {taskId}")
     public Response deleteTask(long taskId) {
         Response response = given()
-                .spec(apiSpec.requestSpec())
+                .spec(apiSpec.requestSpec(Role.ADMIN))
                 .when()
-                .delete("/api/tasks/{id}", taskId);
+                .delete(BASE_PATH + "/{id}", taskId);
 
         attachResponseDetails(response);
 
         return response;
     }
 
-    @Step("Выполнить запрос {method} {path}")
     public Response sendRaw(String method, String path, String contentType, String body) {
+        return sendRaw(Role.USER, method, path, contentType, body);
+    }
+
+    @Step("Выполнить запрос {method} {path} от имени {role}")
+    public Response sendRaw(Role role, String method, String path, String contentType, String body) {
+        return send(apiSpec.requestSpec(role), method, path, contentType, body);
+    }
+
+    @Step("Выполнить запрос {method} {path} без токена")
+    public Response sendRawAnonymous(String method, String path, String contentType, String body) {
+        return send(apiSpec.requestSpecAnonymous(), method, path, contentType, body);
+    }
+
+    @Step("Выполнить запрос {method} {path} с переданным токеном")
+    public Response sendRawWithToken(String token, String method, String path, String contentType, String body) {
+        return send(apiSpec.requestSpecWithToken(token), method, path, contentType, body);
+    }
+
+    private Response send(RequestSpecification spec, String method, String path, String contentType, String body) {
         if (body != null) {
             AllureAttachments.attachRequest(body);
         }
 
-        RequestSpecification request = given().spec(apiSpec.requestSpec());
+        RequestSpecification request = given().spec(spec);
         if (contentType != null) {
             request.contentType(contentType);
         }
@@ -157,9 +193,9 @@ public class TaskApiClient {
 
         Response response = request.when().request(method, path);
         attachResponseDetails(response);
+
         return response;
     }
-
 }
 
 

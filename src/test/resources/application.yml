@@ -17,3 +17,8 @@ tests:
     topic-in: task_in
     topic-in-dlq: task_in_dlq
     topic-out: task_out
+  auth:
+    user:
+      username: user
+    admin:
+      username: admin

@@ -5,6 +5,7 @@ import io.restassured.response.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.learning.taskapitests.auth.Role;
 import ru.learning.taskapitests.client.TaskApiClient;
 import ru.learning.taskapitests.generated.model.ApiErrorResponse;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
@@ -27,12 +28,13 @@ public class TaskSteps {
 
     public static final Map<Integer, String> REASON_PHRASES = Map.of(
             400, "Bad Request",
+            401, "Unauthorized",
+            403, "Forbidden",
             404, "Not Found",
             405, "Method Not Allowed",
             409, "Conflict",
             415, "Unsupported Media Type",
             500, "Internal Server Error");
-
 
     public TaskSteps(TaskApiClient taskApi, CreatedTasksRegistry registry) {
         this.taskApi = taskApi;
@@ -177,9 +179,23 @@ public class TaskSteps {
         return error;
     }
 
-    @Step("Отправить запрос {method} {path}")
     public Response sendRequest(String method, String path, String contentType, String body) {
-        return taskApi.sendRaw(method, path, contentType, body);
+        return sendRequest(Role.USER, method, path, contentType, body);
+    }
+
+    @Step("Отправить запрос {method} {path} от имени {role}")
+    public Response sendRequest(Role role, String method, String path, String contentType, String body) {
+        return taskApi.sendRaw(role, method, path, contentType, body);
+    }
+
+    @Step("Отправить запрос {method} {path} без токена")
+    public Response sendRequestAnonymous(String method, String path, String contentType, String body) {
+        return taskApi.sendRawAnonymous(method, path, contentType, body);
+    }
+
+    @Step("Отправить запрос {method} {path} с переданным токеном")
+    public Response sendRequestWithToken(String token, String method, String path, String contentType, String body) {
+        return taskApi.sendRawWithToken(token, method, path, contentType, body);
     }
 
     @Step("Проверить заголовок {header}: содержит {expectedValues}")
@@ -245,7 +261,7 @@ public class TaskSteps {
     }
 
     @Step("Проверить, что поле «{field}» в ответе равно null")
-    public void checkJsonFieldIsNull(Response response,String field){
+    public void checkJsonFieldIsNull(Response response, String field) {
         assertThat(response.jsonPath().<Object>get(field))
                 .as("Поле " + field + " в ответе")
                 .isNull();

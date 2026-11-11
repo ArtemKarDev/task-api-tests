@@ -1,17 +1,27 @@
 package ru.learning.taskapitests.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import ru.learning.taskapitests.utils.ObjectMappers;
 
 /** Рецепт для всех тестов: настройки и классы-помощники (клиенты и шаги). */
 @Configuration
 @Import(SettingsConfig.class)
 @ComponentScan(basePackages = {
+        "ru.learning.taskapitests.auth",
         "ru.learning.taskapitests.client",
         "ru.learning.taskapitests.db",
         "ru.learning.taskapitests.specs",
         "ru.learning.taskapitests.steps"
 })
 public class TestsConfig {
+
+    @Bean
+    ObjectMapper objectMapper() {
+        return ObjectMappers.create();
+    }
+
 }
