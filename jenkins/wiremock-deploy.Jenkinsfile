@@ -27,8 +27,8 @@ pipeline {
                 withCredentials([file(credentialsId: "env-${params.STAND}", variable: 'ENV_FILE')]) {
                     // Берём из секретного файла только две нужные строки, остальное не трогаем
                     sh '''
-                        PROJECT=$(grep '^COMPOSE_PROJECT_NAME=' "$ENV_FILE" | cut -d= -f2-)
-                        PORT=$(grep '^WIREMOCK_PORT=' "$ENV_FILE" | cut -d= -f2-)
+                        PROJECT=$(grep '^COMPOSE_PROJECT_NAME=' "$ENV_FILE" | cut -d= -f2- | tr -d '\\r')
+                        PORT=$(grep '^WIREMOCK_PORT=' "$ENV_FILE" | cut -d= -f2- | tr -d '\\r')
                         test -n "$PROJECT" || { echo "В env-$STAND нет COMPOSE_PROJECT_NAME"; exit 1; }
                         test -n "$PORT" || { echo "В env-$STAND нет WIREMOCK_PORT"; exit 1; }
                         printf 'STAND_NETWORK=%s_default\\nWIREMOCK_PORT=%s\\n' "$PROJECT" "$PORT" > stub.env
