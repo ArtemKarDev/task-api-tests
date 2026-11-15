@@ -1,0 +1,16 @@
+services:
+  wiremock:
+    build: .
+    image: task-directory-stub:${STUB_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WIREMOCK_PORT:?задайте WIREMOCK_PORT в env-файле}:8080"
+    networks:
+      default:
+        aliases:
+          - wiremock
+
+networks:
+  default:
+    name: ${STAND_NETWORK:?задайте STAND_NETWORK}
+    external: true

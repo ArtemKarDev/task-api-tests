@@ -1,0 +1,13 @@
+{
+  "name": "employee exists (default)",
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/employees/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "active": true }
+  }
+}

@@ -23,7 +23,6 @@ import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 @Feature("Валидация формы создания")
 public class CreateTaskValidationUiTests extends UiTestBase {
 
-
     @ParameterizedTest(name = "название: [{0}]")
     @NullAndEmptySource
     @ValueSource(strings = {" ", " "})

@@ -1,0 +1,16 @@
+{
+  "name": "oauth token (default)",
+  "request": {
+    "method": "POST",
+    "urlPath": "/oauth/token"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "access_token": "stub-access-token",
+      "token_type": "Bearer",
+      "expires_in": 300
+    }
+  }
+}
