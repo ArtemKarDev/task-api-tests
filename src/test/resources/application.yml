@@ -22,3 +22,5 @@ tests:
       username: user
     admin:
       username: admin
+  wiremock:
+    url: ${TESTS_WIREMOCK_URL:http://localhost:8089}

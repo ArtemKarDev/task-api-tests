@@ -34,6 +34,7 @@ public class TaskSteps {
             405, "Method Not Allowed",
             409, "Conflict",
             415, "Unsupported Media Type",
+            422, "",
             500, "Internal Server Error");
 
     public TaskSteps(TaskApiClient taskApi, CreatedTasksRegistry registry) {
@@ -144,6 +145,12 @@ public class TaskSteps {
         assertThat(task.getPriority())
                 .as("Приоритет задачи")
                 .isEqualTo(Task.PriorityEnum.valueOf(request.getPriority().name()));
+
+        if (request.getAssignee() != null) {
+            assertThat(task.getAssignee())
+                    .as("Назначенный сотрудник")
+                    .isEqualTo(request.getAssignee());
+        }
     }
 
     @Step("Проверить текст ошибки {expectedError}")

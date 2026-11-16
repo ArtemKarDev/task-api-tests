@@ -7,7 +7,7 @@ import ru.learning.taskapitests.auth.Role;
  * Настройки тестов. Значения Spring берёт из application.yml, переменных окружения и -D.
  */
 @ConfigurationProperties(prefix = "tests")
-public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka, Auth auth) {
+public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka, Auth auth, Wiremock wiremock) {
 
     public record Db(String url, String user, String password) {
     }
@@ -30,5 +30,7 @@ public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka
     public record Account(String username, String password) {
     }
 
+    public record Wiremock(String url) {
+    }
 
 }

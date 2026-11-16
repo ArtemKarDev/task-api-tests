@@ -4,3 +4,5 @@ tests:
     url: jdbc:postgresql://localhost:5434/taskdb
   kafka:
     bootstrap-servers: localhost:9292
+  wiremock:
+    url: ${TESTS_WIREMOCK_URL:http://localhost:8289}
