@@ -5,6 +5,10 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:${WIREMOCK_PORT:?задайте WIREMOCK_PORT в env-файле}:8080"
+    command: [ "--max-request-journal-entries", "1000" ]
+    mem_limit: 256m
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx128m -XX:+UseSerialGC"
     networks:
       default:
         aliases:
