@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
+import org.hamcrest.MatcherAssert;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.config.TestProperties;
@@ -19,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class KafkaSteps implements AutoCloseable {
 
     private final TestProperties props;
+    public static final String EVENT_SCHEMA = "schemas/task-event.json";
 
     public KafkaSteps(TestProperties props) {
         this.props = props;
@@ -65,12 +68,18 @@ public class KafkaSteps implements AutoCloseable {
         TopicListener.Message message = listener.awaitMessage(
                 candidate -> isEvent(candidate, taskId, eventType), EVENT_TIMEOUT);
         Allure.addAttachment("Событие " + eventType, "application/json", message.value());
+        checkJsonMatchesSchema(message.value(), EVENT_SCHEMA);
         try {
             return MAPPER.readValue(message.value(), TaskEventMessage.class);
         } catch (JsonProcessingException e) {
             throw new AssertionError("Событие не соответствует контракту: " + e.getOriginalMessage()
                     + "\n" + message.value(), e);
         }
+    }
+
+    @Step("Проверить, что JSON соответствует схеме {schemaPath}")
+    public void checkJsonMatchesSchema(String json, String schemaPath){
+        MatcherAssert.assertThat(json, matchesJsonSchemaInClasspath(schemaPath));
     }
 
     @Step("Проверить событие {expectedType} для задачи {taskId}")
@@ -177,6 +186,7 @@ public class KafkaSteps implements AutoCloseable {
         TopicListener.Message message = listener.awaitMessage(
                 candidate -> isCreatedBy(candidate, messageId), EVENT_TIMEOUT);
         Allure.addAttachment("Событие TASK_CREATED", "application/json", message.value());
+        checkJsonMatchesSchema(message.value(), EVENT_SCHEMA);
         try {
             return MAPPER.readValue(message.value(), TaskEventMessage.class);
         } catch (JsonProcessingException e) {
