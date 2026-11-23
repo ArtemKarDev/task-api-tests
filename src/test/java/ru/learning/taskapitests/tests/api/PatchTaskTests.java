@@ -32,6 +32,8 @@ public class PatchTaskTests extends TestBase {
                 task.getId(),
                 new PatchTaskRequest().status(PatchTaskRequest.StatusEnum.DONE));
 
+        step.checkMatchesSchema(response, "schemas/task.json");
+
         assertThat(response.statusCode()).as("Код ответа").isEqualTo(200);
         Task actual = response.as(Task.class);
         assertThat(actual.getStatus()).as("Статус").isEqualTo(Task.StatusEnum.DONE);

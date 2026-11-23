@@ -24,6 +24,7 @@ public class UpdateTaskTests extends TestBase {
         Response updateResponse = taskApi.updateTask(taskId, TaskDataFactory.validUpdateRequestBody());
 
         step.checkStatus(updateResponse, 200);
+        step.checkMatchesSchema(updateResponse, "schemas/task.json");
         step.checkTaskData(updateResponse,taskId,"Обновлённая задача","IN_PROGRESS","MEDIUM");
 
         Response getResponse = step.getTask(taskId);

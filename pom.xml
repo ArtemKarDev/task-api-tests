@@ -24,6 +24,7 @@
         <selenide.version>7.17.0</selenide.version>
         <selenium.version>4.46.0</selenium.version>
         <jackson-bom.version>2.22.2</jackson-bom.version>
+        <rest-assured.version>5.5.6</rest-assured.version>
     </properties>
 
     <dependencies>
@@ -37,7 +38,14 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>5.5.6</version>
+            <version>${rest-assured.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>${rest-assured.version}</version>
             <scope>test</scope>
         </dependency>
 

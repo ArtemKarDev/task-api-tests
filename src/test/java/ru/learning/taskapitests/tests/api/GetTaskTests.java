@@ -24,6 +24,7 @@ public class GetTaskTests extends TestBase {
     public void getTaskById(Task task){
         Response response = step.getTask(task.getId());
         step.checkStatus(response, 200);
+        step.checkMatchesSchema(response,"schemas/task.json");
         step.checkTaskData(response, task.getId(),task.getTitle(),task.getStatus().name(),task.getPriority().name());
         assertThat(response.as(Task.class))
                 .as("Задача из ответа на создание и из ответа на get одна и таже")

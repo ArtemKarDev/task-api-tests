@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "ApiErrorResponse",
+  "description": "Тело любой ошибки REST API (GlobalExceptionHandler)",
+  "type": "object",
+  "required": ["timestamp", "status", "error", "message", "details", "path"],
+  "additionalProperties": false,
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "status":    { "type": "integer", "minimum": 400, "maximum": 599 },
+    "error":     { "type": "string", "minLength": 1 },
+    "message":   { "type": "string", "minLength": 1 },
+    "details": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/fieldError" }
+    },
+    "path":      { "type": "string", "pattern": "^/" }
+  },
+  "definitions": {
+    "fieldError": {
+      "type": "object",
+      "required": ["field", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "field":   { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

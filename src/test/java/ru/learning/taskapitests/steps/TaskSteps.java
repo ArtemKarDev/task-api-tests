@@ -17,11 +17,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Component
 public class TaskSteps {
 
+    public static final String TASK_SCHEMA = "schemas/task.json";
+    public static final String ERROR_SCHEMA = "schemas/error.json";
     private final TaskApiClient taskApi;
     private final CreatedTasksRegistry registry;
     public static final Logger log = LoggerFactory.getLogger(TaskSteps.class);
@@ -69,6 +72,10 @@ public class TaskSteps {
                 .as("HTTP-статус ответа").isEqualTo(expectedStatus);
     }
 
+    @Step("Проверить, что тело ответа соответствует схеме {schemaPath}")
+    public void checkMatchesSchema(Response response, String schemaPath) {
+        response.then().assertThat().body(matchesJsonSchemaInClasspath(schemaPath));
+    }
 
     @Step("Создать задачу")
     public Response createTask(String requestBody) {
@@ -111,6 +118,9 @@ public class TaskSteps {
 
     @Step("Проверить данные задачи")
     public void checkResponseCreateTaskDataWithDto(Response response, CreateTaskRequest request) {
+
+        response.then().assertThat().body(matchesJsonSchemaInClasspath(TASK_SCHEMA));
+
         assertThat(response.jsonPath().getLong("id"))
                 .as("ID задачи")
                 .isPositive();
@@ -155,6 +165,7 @@ public class TaskSteps {
 
     @Step("Проверить текст ошибки {expectedError}")
     public void checkErrorMessage(Response response, String expectedMessage) {
+        checkMatchesSchema(response,ERROR_SCHEMA);
         assertThat(response.jsonPath().getString("message"))
                 .as("Сообщение об ошибке")
                 .isEqualTo(expectedMessage);
@@ -163,6 +174,8 @@ public class TaskSteps {
     @Step("Проверить ответ-ошибку: {expectedStatus}, сообщение «{expectedMessage}»")
     public ApiErrorResponse checkApiError(Response response, int expectedStatus,
                                           String expectedMessage, String expectedPath) {
+
+        checkMatchesSchema(response, ERROR_SCHEMA);
         ApiErrorResponse error = checkErrorEnvelope(response, expectedStatus, expectedMessage, expectedPath);
         assertThat(error.getDetails()).as("Ошибки по полям (должен быть пустой список)").isEmpty();
         return error;
