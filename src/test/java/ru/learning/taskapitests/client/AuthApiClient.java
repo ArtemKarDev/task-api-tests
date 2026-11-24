@@ -29,9 +29,7 @@ public class AuthApiClient  {
 
     @Step("Войти как {username}")
     public Response login(String username, String password) {
-
         LoginRequest requestBody = new LoginRequest().username(username).password(password);
-
         return postLogin(requestBody);
     }
 
@@ -78,10 +76,16 @@ public class AuthApiClient  {
     public Response changeOwnPassword(@Param(mode = Parameter.Mode.HIDDEN) String token,
                                       @Param(mode = Parameter.Mode.HIDDEN) String currentPassword,
                                       @Param(mode = Parameter.Mode.HIDDEN) String newPassword) {
-        return given()
+        Response response = given()
+                .baseUri(props.baseUrl())
+                .contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(Map.of("currentPassword", currentPassword, "newPassword", newPassword))
+                .when()
                 .put("/api/users/me/password");
+
+        attachResponseWithoutSecrets(response);
+        return response;
     }
 
 }
