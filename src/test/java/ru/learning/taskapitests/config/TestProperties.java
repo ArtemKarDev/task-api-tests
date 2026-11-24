@@ -18,11 +18,12 @@ public record TestProperties(String baseUrl, Db db, Browser browser, Kafka kafka
     public record Kafka(String bootstrapServers, String topicIn, String topicInDlq, String topicOut) {
     }
 
-    public record Auth(Account user, Account admin) {
+    public record Auth(Account user, Account admin, Account demo) {
         public Account accountFor(Role role) {
             return switch (role) {
                 case USER -> user;
                 case ADMIN -> admin;
+                case DEMO -> demo;
             };
         }
     }

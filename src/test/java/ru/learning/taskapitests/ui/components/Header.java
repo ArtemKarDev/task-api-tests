@@ -41,6 +41,10 @@ public class Header {
         return root.$("form[action$='/logout'] button[type=submit]");
     }
 
+    public SelenideElement navLink(String hrefSuffix) {
+        return root.$("nav a[href$='" + hrefSuffix + "']");
+    }
+
     @Step("Выйти из системы")
     public LoginPage logout() {
         logoutButton().click();

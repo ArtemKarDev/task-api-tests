@@ -1,12 +1,12 @@
 package ru.learning.taskapitests.steps.ui;
 
+import com.codeborne.selenide.Selenide;
 import io.qameta.allure.Step;
 import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.ui.components.Header;
 import ru.learning.taskapitests.ui.pages.*;
 
-import static com.codeborne.selenide.Condition.exactText;
-import static com.codeborne.selenide.Condition.exist;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
 
@@ -54,6 +54,14 @@ public class NavigationUiSteps {
         new Header().activeLink().shouldHave(exactText(expectedItem));
     }
 
+    @Step("Проверить, что в меню нет пунктов с задачами и есть Вход")
+    public void checkGuestHeader(Header header){
+        header.loginLink().shouldBe(visible);
+        header.searchLink().shouldNot(exist);
+        header.createLink().shouldNot(exist);
+    }
+
+
     @Step("Проверить, что в меню не подсвечен ни один пункт")
     public void checkNoActiveMenuItem() {
         new Header().activeLink().shouldNot(exist);
@@ -64,8 +72,20 @@ public class NavigationUiSteps {
         return new CreateTaskPage().open();
     }
 
+    @Step("Открыть страницу о Проекте")
+    public AboutPage openAboutPage(){
+         Selenide.open(AboutPage.PATH);
+        return new AboutPage();
+    }
 
+    @Step("Проверить шапку вошедшего пользователя: есть ссылки на задачи")
+    public void checkUserHeader(Header header) {
+        header.searchLink().shouldBe(visible);
+        header.createLink().shouldBe(visible);
+    }
 
-
-
+    public AboutPage openMainPageAsGuest() {
+        Selenide.open("/");
+        return new AboutPage();
+    }
 }

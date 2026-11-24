@@ -7,15 +7,19 @@ import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.config.TestProperties;
 import ru.learning.taskapitests.generated.model.LoginRequest;
+import ru.learning.taskapitests.generated.model.TokenResponse;
 import ru.learning.taskapitests.utils.AllureAttachments;
+
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
 
 @Component
-public class AuthApiClient {
+public class AuthApiClient  {
     public static final String LOGIN_PATH = "/api/auth/login";
     private final TestProperties props;
+
 
     public AuthApiClient(TestProperties props) {
         this.props = props;
@@ -27,6 +31,13 @@ public class AuthApiClient {
         LoginRequest requestBody = new LoginRequest().username(username).password(password);
 
         return postLogin(requestBody);
+    }
+
+    @Step("Войти как {username} и получить токен")
+    public String loginAndGetToken(String username, String password) {
+        Response response = login(username, password);
+        response.then().statusCode(200);
+        return response.as(TokenResponse.class).getAccessToken();
     }
 
     @Step("Отправить «сырой» запрос на вход")
@@ -60,4 +71,14 @@ public class AuthApiClient {
             }
         }
     }
+
+    @Step("Сменить свой пароль с токеном пользователя")
+    public Response changeOwnPassword(String token, String currentPassword, String newPassword) {
+        return given()
+                .contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(Map.of("currentPassword", currentPassword, "newPassword", newPassword))
+                .put("/api/users/me/password");
+    }
+
 }

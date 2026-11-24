@@ -1,5 +1,6 @@
 package ru.learning.taskapitests.client;
 
+import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.springframework.stereotype.Component;
@@ -62,4 +63,14 @@ public class UiSessionClient {
         }
         return matcher.group(1);
     }
+
+    @Step("Гость запрашивает страницу {path}")
+    public Response getPageAsGuest(String path) {
+        return given()
+                .baseUri(props.baseUrl())
+                .redirects().follow(false)
+                .get(path);
+    }
+
+
 }

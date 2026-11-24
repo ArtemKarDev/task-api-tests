@@ -6,3 +6,5 @@ tests:
       password: local_user_password
     admin:
       password: local_admin_password
+    demo:
+      password: 12345678

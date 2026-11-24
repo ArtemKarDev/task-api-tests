@@ -44,6 +44,7 @@ public class TokenProvider {
         return switch (role) {
             case USER -> props.auth().user();
             case ADMIN -> props.auth().admin();
+            case DEMO -> props.auth().demo();
         };
     }
 

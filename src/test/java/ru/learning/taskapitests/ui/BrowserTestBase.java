@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.learning.taskapitests.TestBase;
+import ru.learning.taskapitests.steps.ui.AboutUiSteps;
 import ru.learning.taskapitests.steps.ui.NavigationUiSteps;
 import ru.learning.taskapitests.steps.ui.TaskUiSteps;
 
@@ -22,6 +23,9 @@ public abstract class BrowserTestBase extends TestBase {
     protected TaskUiSteps uiStep;
     @Autowired
     protected NavigationUiSteps navStep;
+
+    @Autowired
+    protected AboutUiSteps aboutUiSteps;
 
     @BeforeEach
     protected void configureSelenide() {

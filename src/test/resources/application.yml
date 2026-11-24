@@ -22,5 +22,8 @@ tests:
       username: user
     admin:
       username: admin
+    demo:
+      username: ${TESTS_AUTH_DEMO_USERNAME:demo}
+      password: ${TESTS_AUTH_DEMO_PASSWORD:}
   wiremock:
     url: ${TESTS_WIREMOCK_URL:http://localhost:8089}

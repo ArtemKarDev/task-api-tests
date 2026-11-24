@@ -1,19 +1,18 @@
 package ru.learning.taskapitests.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.auth.Role;
-import ru.learning.taskapitests.config.TestProperties;
-import ru.learning.taskapitests.generated.model.PatchTaskRequest;
-import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
+import ru.learning.taskapitests.generated.model.PatchTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
+import ru.learning.taskapitests.specs.ApiSpec;
 import ru.learning.taskapitests.utils.AllureAttachments;
 import ru.learning.taskapitests.utils.JsonUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static io.restassured.RestAssured.given;
 
@@ -144,7 +143,6 @@ public class TaskApiClient {
             throw new IllegalStateException("Не удалось превратить тело запроса в JSON", e);
         }
     }
-
 
 
     @Step("Удалить задачу по Id: : {taskId}")

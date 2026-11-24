@@ -163,7 +163,7 @@ public class TaskSteps {
         }
     }
 
-    @Step("Проверить текст ошибки {expectedError}")
+    @Step("Проверить текст ошибки {expectedMessage}")
     public void checkErrorMessage(Response response, String expectedMessage) {
         checkMatchesSchema(response,ERROR_SCHEMA);
         assertThat(response.jsonPath().getString("message"))

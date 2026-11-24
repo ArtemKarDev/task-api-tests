@@ -11,6 +11,8 @@ import ru.learning.taskapitests.ui.pages.AboutPage;
 import ru.learning.taskapitests.ui.pages.CreateTaskPage;
 import ru.learning.taskapitests.ui.pages.TasksPage;
 
+import static com.codeborne.selenide.Condition.visible;
+
 @Tag(Tags.UI)
 @Tag(Tags.REGRESSION)
 @Epic("UI")
@@ -46,4 +48,6 @@ class NavigationUiTests extends UiTestBase {
 
         navStep.checkPageOpened(page, "Поиск задач", "/tasks");
     }
+
+
 }
