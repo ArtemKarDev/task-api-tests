@@ -108,7 +108,7 @@ pipeline {
                       -e TESTS_AUTH_USER_PASSWORD="$APP_SECURITY_USER_PASSWORD" \
                       -e TESTS_AUTH_ADMIN_PASSWORD="$APP_SECURITY_ADMIN_PASSWORD" \
                       -e TESTS_AUTH_DEMO_PASSWORD="$APP_DEMO_PASSWORD" \
-                      -e TESTS_WIREMOCK_URL=http://wiremock:8080
+                      -e TESTS_WIREMOCK_URL=http://wiremock:8080 \
                       $BROWSER_ARGS \
                       --entrypoint sh \
                       "$MAVEN_IMAGE" \
