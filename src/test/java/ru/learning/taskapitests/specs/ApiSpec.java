@@ -3,6 +3,7 @@ package ru.learning.taskapitests.specs;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Component;
 import ru.learning.taskapitests.auth.Role;
@@ -41,8 +42,11 @@ public class ApiSpec {
 
 
     public RequestSpecification requestSpecWithToken(String token) {
-        return baseRequestSpec()
-                .auth().oauth2(token);
+        return new RequestSpecBuilder()
+                .setBaseUri(props.baseUrl())
+                .setContentType(JSON)
+                .addHeader("Authorization", "Bearer " + token)
+                .build();
     }
 
     public RequestSpecification requestSpecAnonymous() {

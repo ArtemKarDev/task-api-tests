@@ -1,6 +1,8 @@
 package ru.learning.taskapitests.client;
 
+import io.qameta.allure.Param;
 import io.qameta.allure.Step;
+import io.qameta.allure.model.Parameter;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -73,9 +75,10 @@ public class AuthApiClient  {
     }
 
     @Step("Сменить свой пароль с токеном пользователя")
-    public Response changeOwnPassword(String token, String currentPassword, String newPassword) {
+    public Response changeOwnPassword(@Param(mode = Parameter.Mode.HIDDEN) String token,
+                                      @Param(mode = Parameter.Mode.HIDDEN) String currentPassword,
+                                      @Param(mode = Parameter.Mode.HIDDEN) String newPassword) {
         return given()
-                .contentType(ContentType.JSON)
                 .auth().oauth2(token)
                 .body(Map.of("currentPassword", currentPassword, "newPassword", newPassword))
                 .put("/api/users/me/password");

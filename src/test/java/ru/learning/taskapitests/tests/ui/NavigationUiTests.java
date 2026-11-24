@@ -30,7 +30,7 @@ class NavigationUiTests extends UiTestBase {
         navStep.checkActiveMenuItem("Новая задача");
 
         AboutPage aboutPage = navStep.goToAbout();
-        navStep.checkPageOpened(aboutPage, "О проекте", "/about");
+        navStep.checkPageOpened(aboutPage, "Артём Карлашов", "/about");
         navStep.checkActiveMenuItem("О проекте");
 
         TasksPage tasksPage = navStep.goToSearch();
