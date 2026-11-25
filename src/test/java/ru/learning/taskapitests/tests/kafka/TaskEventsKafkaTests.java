@@ -24,6 +24,7 @@ import java.util.Map;
 @Tag(Tags.REGRESSION)
 @Epic("Kafka")
 @Feature("События task_out")
+@DisplayName("События Kafka топик task_out ")
 class TaskEventsKafkaTests extends TestBase {
 
     @Test

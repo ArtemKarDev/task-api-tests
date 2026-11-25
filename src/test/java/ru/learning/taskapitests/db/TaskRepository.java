@@ -2,100 +2,75 @@ package ru.learning.taskapitests.db;
 
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class TaskRepository {
 
-    private final DbClient dbClient;
+    private static final String TASK_COLUMNS =
+            "id, title, description, status, priority, assignee, created_at, updated_at";
 
-    public TaskRepository(DbClient dbClient){
-        this.dbClient = dbClient;
+    private final DbClient db;
+    public TaskRepository(DbClient db){
+        this.db = db;
     }
-    public TaskDbRecord findById(long taskId) throws SQLException {
-        String sql = """
-                SELECT id, title, description, status , priority , assignee
-                FROM tasks
-                WHERE id = ?                
-                """;
-
-        try (Connection connection = dbClient.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, taskId);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (!resultSet.next()) {
-                    return null;
-                }
-
-                return new TaskDbRecord(
-                        resultSet.getLong("id"),
-                        resultSet.getString("title"),
-                        resultSet.getString("description"),
-                        resultSet.getString("status"),
-                        resultSet.getString("priority"),
-                        resultSet.getString("assignee")
-                );
-            }
-        }
+    public Optional<TaskDbRecord> findById(long taskId) {
+        return db.jdbc()
+                .sql("SELECT " + TASK_COLUMNS + " FROM tasks WHERE id = ?")
+                .param(taskId)
+                .query(TaskDbRecord.class)
+                .optional();
     }
 
-    public long countAll() throws SQLException {
-        String sql = "SELECT count(*) FROM tasks";
-
-        try (Connection connection = dbClient.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-            resultSet.next();
-            return resultSet.getLong(1);
-        }
+    public long countByTitle(String title) {
+        return db.jdbc()
+                .sql("SELECT count(*) FROM tasks WHERE title = ?")
+                .param(title)
+                .query(Long.class)
+                .single();
     }
 
-    public long countByTitle(String title) throws SQLException {
-        String sql = "SELECT count(*) FROM tasks WHERE title = ?";
-
-        try (Connection connection = dbClient.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, title);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getLong(1);
-            }
-        }
+    public long countProcessedMessages(UUID messageId) {
+        return db.jdbc()
+                .sql("SELECT count(*) FROM processed_messages WHERE message_id = ?")
+                .param(messageId)
+                .query(Long.class)
+                .single();
     }
 
-    public long countProcessedMessages(UUID messageId) throws SQLException {
-        String sql = "SELECT count(*) FROM processed_messages WHERE message_id = ?";
-
-        try (Connection connection = dbClient.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setObject(1, messageId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getLong(1);
-            }
-        }
+    public Optional<Long> findTaskIdByMessage(UUID messageId) {
+        return db.jdbc()
+                .sql("SELECT task_id FROM processed_messages WHERE message_id = ?")
+                .param(messageId)
+                .query(Long.class)
+                .optional();
     }
 
-    /** ID задачи, созданной из сообщения, или null, если сообщения нет или задача не привязана. */
-    public Long findTaskIdByMessage(UUID messageId) throws SQLException {
-        String sql = "SELECT task_id FROM processed_messages WHERE message_id = ?";
-
-        try (Connection connection = dbClient.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setObject(1, messageId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (!resultSet.next()) {
-                    return null;
-                }
-                long taskId = resultSet.getLong("task_id");
-                return resultSet.wasNull() ? null : taskId;
-            }
-        }
+    public long insert(NewDbTask task) {
+        return db.jdbc()
+                .sql("""
+                        INSERT INTO tasks (title, description, status, priority, assignee, created_at, updated_at)
+                        VALUES (:title, :description, :status, :priority, :assignee, :createdAt, :updatedAt)
+                        RETURNING id
+                        """)
+                .param("title", task.title())
+                .param("description", task.description())
+                .param("status", task.status())
+                .param("priority", task.priority())
+                .param("assignee", task.assignee())
+                .param("createdAt", task.createdAt())
+                .param("updatedAt", task.updatedAt())
+                .query(Long.class)
+                .single();
     }
+
+    public int deleteById(long taskId) {
+        return db.jdbc()
+                .sql("DELETE FROM tasks WHERE id = ?")
+                .param(taskId)
+                .update();
+    }
+
 
 }

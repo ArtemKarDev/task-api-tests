@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag(Tags.REGRESSION)
 @Epic("Безопасность")
 @Feature("Доступ гостя к страницам")
+@DisplayName("Доступ гостя к страницам")
 class GuestAccessTests extends TestBase {
 
     @Autowired

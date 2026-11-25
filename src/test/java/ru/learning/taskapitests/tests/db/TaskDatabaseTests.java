@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.TestBase;
 import ru.learning.taskapitests.data.TaskDataFactory;
+import ru.learning.taskapitests.db.NewDbTask;
 import ru.learning.taskapitests.db.TaskDbRecord;
 import ru.learning.taskapitests.db.TaskRepository;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 @Tag(Tags.DB)
 @DisplayName("Тесты процедур в БД")
@@ -23,7 +25,7 @@ public class TaskDatabaseTests extends TestBase {
     void shouldSaveCreatedTaskInDatabase() throws Exception {
         long taskId = step.createTaskAndGetId(TaskDataFactory.validCreateTaskRequest());
 
-        TaskDbRecord taskFromDb = taskRepository.findById(taskId);
+        TaskDbRecord taskFromDb = dbStep.getTaskFromDb(taskId);
 
         assertThat(taskFromDb)
                 .as("Задача с ID %s должна существовать в БД", taskId)
@@ -34,6 +36,17 @@ public class TaskDatabaseTests extends TestBase {
         assertThat(taskFromDb.description()).isEqualTo("Создана через REST Assured");
         assertThat(taskFromDb.status()).isEqualTo("NEW");
         assertThat(taskFromDb.priority()).isEqualTo("HIGH");
+
+    }
+
+
+    @Test
+    void insertAndDeleteDirectly() {
+        long id = taskRepository.insert(NewDbTask.defaults(TaskDataFactory.uniqueTitle("Db")));
+
+        assertThat(taskRepository.findById(id)).as("строка вставлена").isPresent();
+        assertThat(taskRepository.deleteById(id)).as("удалена одна строка").isEqualTo(1);
+        assertThat(taskRepository.findById(id)).as("строки больше нет").isEmpty();
 
     }
 

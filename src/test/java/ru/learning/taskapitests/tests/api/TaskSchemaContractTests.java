@@ -25,12 +25,10 @@ import static ru.learning.taskapitests.steps.TaskSteps.TASK_SCHEMA;
 @DisplayName("Схема задачи task.json")
 class TaskSchemaContractTests{
 
-//    private static final String TASK_SCHEMA = "schemas/task.json";
     private static final String VALID_TASK = """
             {"id":15,"title":"Купить молоко","description":null,"status":"NEW","priority":"LOW",
              "assignee":null,"createdAt":"2026-10-22T15:13:05.04423","updatedAt":"2026-10-22T15:13:05.04423"}
             """;
-
 
     @Test
     @DisplayName("Правильная задача соответствует схеме")

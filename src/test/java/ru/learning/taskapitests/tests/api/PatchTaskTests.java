@@ -12,6 +12,9 @@ import ru.learning.taskapitests.extensions.WithTask;
 import ru.learning.taskapitests.generated.model.CreateTaskRequest;
 import ru.learning.taskapitests.generated.model.PatchTaskRequest;
 import ru.learning.taskapitests.generated.model.Task;
+
+import static ru.learning.taskapitests.generated.model.CreateTaskRequest.PriorityEnum.HIGH;
+import static ru.learning.taskapitests.generated.model.CreateTaskRequest.StatusEnum.DONE;
 import static ru.learning.taskapitests.utils.TimeComparators.SAME_MOMENT;
 
 import java.time.Duration;
@@ -43,7 +46,7 @@ public class PatchTaskTests extends TestBase {
 
     @Test
     @Tag(Tags.SMOKE)
-    @WithTask(status = CreateTaskRequest.StatusEnum.DONE, priority = CreateTaskRequest.PriorityEnum.HIGH)
+    @WithTask(status = DONE, priority = HIGH)
     @DisplayName("PATCH меняет только priority, остальные поля остаются прежними")
     void shouldPatchOnlyPriorityAndKeepOtherFields(Task task) {
         PatchTaskRequest request = new PatchTaskRequest()

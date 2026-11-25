@@ -3,15 +3,15 @@ package ru.learning.taskapitests.tests.unit;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;                                                                    // НОВОЕ
-import org.slf4j.LoggerFactory;                                                             // НОВОЕ
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.source.ConfigurationProperty;           // НОВОЕ
-import org.springframework.boot.context.properties.source.ConfigurationPropertyName;       // НОВОЕ
-import org.springframework.boot.context.properties.source.ConfigurationPropertySource;     // НОВОЕ
-import org.springframework.boot.context.properties.source.ConfigurationPropertySources;    // НОВОЕ
+import org.springframework.boot.context.properties.source.ConfigurationProperty;
+import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
+import org.springframework.boot.context.properties.source.ConfigurationPropertySource;
+import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;                                            // НОВОЕ
+import org.springframework.core.env.Environment;
 import ru.learning.taskapitests.Tags;
 import ru.learning.taskapitests.config.SettingsConfig;
 import ru.learning.taskapitests.config.TestProperties;
@@ -22,13 +22,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = SettingsConfig.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class SpringSettingsTests {
 
-    private static final Logger log = LoggerFactory.getLogger(SpringSettingsTests.class);   // НОВОЕ
-    private static final String NOT_SET = "(нигде не задано)";                              // НОВОЕ
+    private static final Logger log = LoggerFactory.getLogger(SpringSettingsTests.class);
+    private static final String NOT_SET = "(нигде не задано)";
 
     @Autowired
     TestProperties props;
 
-    @Autowired                                                                              // НОВОЕ
+    @Autowired
     Environment environment;
 
     @Test
@@ -43,7 +43,7 @@ class SpringSettingsTests {
         assertThat(props.kafka().topicOut()).isEqualTo("task_out");
     }
 
-    @Test                                                                                   // НОВОЕ
+    @Test
     @DisplayName("Детектор: откуда пришло значение (смотрите строки в журнале теста)")
     void shouldTellWhereValueCameFrom() {
         log.info("tests.base-url = {}", describe("tests.base-url"));
@@ -53,7 +53,7 @@ class SpringSettingsTests {
     }
 
     /** Идёт по источникам настроек сверху вниз и показывает, какой первым дал значение и откуда именно. */
-    private String describe(String key) {                                                   // НОВОЕ
+    private String describe(String key) {
         ConfigurationPropertyName name = ConfigurationPropertyName.of(key);
         for (ConfigurationPropertySource source : ConfigurationPropertySources.get(environment)) {
             ConfigurationProperty property = source.getConfigurationProperty(name);

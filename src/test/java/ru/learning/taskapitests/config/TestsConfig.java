@@ -1,6 +1,8 @@
 package ru.learning.taskapitests.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -23,5 +25,19 @@ public class TestsConfig {
     ObjectMapper objectMapper() {
         return ObjectMappers.create();
     }
+
+    @Bean(destroyMethod = "close")
+    public HikariDataSource dataSource(TestProperties props) {
+        HikariConfig config = new HikariConfig();
+        config.setPoolName("test-db");
+        config.setJdbcUrl(props.db().url());
+        config.setUsername(props.db().user());
+        config.setPassword(props.db().password());
+        config.setMaximumPoolSize(5);
+        config.setConnectionTimeout(5_000);
+        config.setInitializationFailTimeout(-1);
+        return new HikariDataSource(config);
+    }
+
 
 }

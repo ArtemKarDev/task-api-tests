@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 @Tag(Tags.NEGATIVE)
 @Epic("API")
 @Feature("Валидация создания задачи")
+@DisplayName("Валидация создания задачи")
 class CreateTaskValidationApiTests extends TestBase {
 
     private static final String PATH = "/api/tasks";
